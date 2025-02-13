@@ -16,6 +16,10 @@ function Navbar({ location }) {
 
   const isActive = (path) => location.pathname === path
 
+  const handleShopClick = () => {
+    setIsShopOpen(!isShopOpen)
+  }
+
   return (
     <nav className="bg-white shadow-md text-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,13 +60,16 @@ function Navbar({ location }) {
             </Link>
             
             <div className="relative group">
-              <button 
-                onClick={() => setIsShopOpen(!isShopOpen)}
-                className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
+              <Link 
+                to="/shop"
+                onClick={handleShopClick}
+                className={`text-gray-600 hover:text-gray-900 flex items-center space-x-1 ${
+                  isActive('/shop') && 'text-blue-600'
+                }`}
               >
                 <ShoppingBag className="h-5 w-5" />
                 <span>Shop</span>
-              </button>
+              </Link>
               
               {isShopOpen && (
                 <div className="absolute left-0 mt-2 w-[400px] bg-white shadow-lg rounded-md z-50">
@@ -135,7 +142,12 @@ function Navbar({ location }) {
               <Link to="/" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
                 Home
               </Link>
-              <Link to="/shop" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
+              <Link 
+                to="/shop" 
+                className={`text-gray-600 hover:bg-gray-50 py-3 text-center font-medium ${
+                  isActive('/shop') && 'text-blue-600 bg-blue-50'
+                }`}
+              >
                 Shop
               </Link>
               <Link to="/about" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">

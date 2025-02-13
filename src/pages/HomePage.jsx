@@ -2,8 +2,9 @@ import Hero from '../components/Hero'
 import BrandLogos from '../components/BrandLogos'
 import ProductCards from '../components/ProductCards'
 import BestsellerProducts from '../components/BestsellerProducts'
+import WeLove from '../components/WeLove'
 import Features from '../components/Features'
-import Contact from '../components/Contact'
+import FeaturedPosts from '../components/FeaturedPosts'
 
 function HomePage() {
   return (
@@ -12,8 +13,9 @@ function HomePage() {
       <BrandLogos />
       <ProductCards />
       <BestsellerProducts />
+      <WeLove />
       <Features />
-      <Contact />
+      <FeaturedPosts />
     </>
   )
 }
