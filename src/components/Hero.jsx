@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import bgImage from '../assets/shop-hero-3-product-slide-2.jpg'
 
 function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -7,17 +8,17 @@ function Hero() {
     {
       title: "BLACK FRIDAY",
       description: "We know how large objects will act, but things on a small scale just do not act that way.",
-      buttonText: "Start Now"
+      buttonText: "Start Now",
     },
     {
       title: "WINTER COLLECTION",
       description: "Discover our winter collection with amazing discounts.",
-      buttonText: "Shop Now"
+      buttonText: "Shop Now",
     },
     {
       title: "NEW ARRIVALS",
       description: "Check out our latest collection for this season.",
-      buttonText: "Explore"
+      buttonText: "Explore",
     }
   ]
 
@@ -41,7 +42,6 @@ function Hero() {
 
   return (
     <div id="home" className="relative h-[400px] md:h-[600px] overflow-hidden">
-      {/* Slides */}
       <div 
         className="h-full transition-transform duration-500 ease-out flex"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -51,15 +51,16 @@ function Hero() {
             key={index}
             className="w-full h-full flex-shrink-0 relative"
           >
-            {/* Background Image with Overlay */}
+            {/* Background Image */}
             <div 
               className="absolute inset-0 bg-cover bg-center"
               style={{ 
-                backgroundImage: `url('/images/shop-hero-3-product-slide-2.jpg')`,
+                backgroundImage: `url(${bgImage})`
               }}
-            >
-              <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-            </div>
+            />
+            
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
             {/* Content */}
             <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4">
