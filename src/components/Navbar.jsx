@@ -22,7 +22,7 @@ function Navbar({ location }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <span className="text-xl font-semibold text-gray-800">BrandName</span>
+            <span className="text-xl font-black text-gray-800">P1NTENDO</span>
           </Link>
 
           {/* Mobile Right Icons */}
@@ -55,7 +55,7 @@ function Navbar({ location }) {
               <span>Home</span>
             </Link>
             
-            <div className="relative">
+            <div className="relative group">
               <button 
                 onClick={() => setIsShopOpen(!isShopOpen)}
                 className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
@@ -65,11 +65,28 @@ function Navbar({ location }) {
               </button>
               
               {isShopOpen && (
-                <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                  <div className="py-1">
-                    <Link to="/category-1" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Category 1</Link>
-                    <Link to="/category-2" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Category 2</Link>
-                    <Link to="/category-3" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Category 3</Link>
+                <div className="absolute left-0 mt-2 w-[400px] bg-white shadow-lg rounded-md z-50">
+                  <div className="grid grid-cols-2 gap-16 p-6">
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-4">Kadın</h3>
+                      <div className="space-y-3">
+                        <Link to="/kadin/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                        <Link to="/kadin/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
+                        <Link to="/kadin/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
+                        <Link to="/kadin/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                        <Link to="/kadin/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-4">Erkek</h3>
+                      <div className="space-y-3">
+                        <Link to="/erkek/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                        <Link to="/erkek/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
+                        <Link to="/erkek/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
+                        <Link to="/erkek/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                        <Link to="/erkek/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

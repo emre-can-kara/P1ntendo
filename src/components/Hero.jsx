@@ -8,17 +8,17 @@ function Hero() {
     {
       title: "BLACK FRIDAY",
       description: "We know how large objects will act, but things on a small scale just do not act that way.",
-      buttonText: "Start Now",
+      buttonText: "Start Now"
     },
     {
       title: "WINTER COLLECTION",
       description: "Discover our winter collection with amazing discounts.",
-      buttonText: "Shop Now",
+      buttonText: "Shop Now"
     },
     {
       title: "NEW ARRIVALS",
       description: "Check out our latest collection for this season.",
-      buttonText: "Explore",
+      buttonText: "Explore"
     }
   ]
 
