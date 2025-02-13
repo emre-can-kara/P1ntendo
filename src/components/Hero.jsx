@@ -41,7 +41,7 @@ function Hero() {
   }
 
   return (
-    <div id="home" className="relative h-[400px] md:h-[600px] overflow-hidden">
+    <div id="home" className="relative h-[640px] max-w-[1440px] mx-auto overflow-hidden">
       <div 
         className="h-full transition-transform duration-500 ease-out flex"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -96,14 +96,16 @@ function Hero() {
         </svg>
       </button>
 
-      {/* Dots Navigation */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+      {/* Line Navigation - Dots yerine çizgi kullanıyoruz */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              index === currentSlide ? 'bg-white' : 'bg-white/50'
+            className={`h-1 transition-all duration-300 ${
+              index === currentSlide 
+                ? 'w-8 bg-white' 
+                : 'w-4 bg-white/50 hover:bg-white/75'
             }`}
           />
         ))}

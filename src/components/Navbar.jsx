@@ -27,11 +27,11 @@ function Navbar({ location }) {
 
           {/* Mobile Right Icons */}
           <div className="md:hidden flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-gray-900">
+            <button className="text-[#3B82F6] hover:text-blue-600">
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>
             </button>
-            <button className="text-gray-600 hover:text-gray-900 relative">
+            <button className="text-[#3B82F6] hover:text-blue-600 relative">
               <Heart className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>
             </button>
@@ -75,8 +75,21 @@ function Navbar({ location }) {
               )}
             </div>
 
-            <Link to="/features" className={`text-gray-600 hover:text-gray-900 ${isActive('/features') && 'text-blue-600'}`}>Features</Link>
-            <Link to="/contact" className={`text-gray-600 hover:text-gray-900 ${isActive('/contact') && 'text-blue-600'}`}>Contact</Link>
+            <Link to="/about" className={`text-gray-600 hover:text-gray-900 ${isActive('/about') && 'text-blue-600'}`}>
+              About
+            </Link>
+            <Link to="/blog" className={`text-gray-600 hover:text-gray-900 ${isActive('/blog') && 'text-blue-600'}`}>
+              Blog
+            </Link>
+            <Link to="/features" className={`text-gray-600 hover:text-gray-900 ${isActive('/features') && 'text-blue-600'}`}>
+              Features
+            </Link>
+            <Link to="/contact" className={`text-gray-600 hover:text-gray-900 ${isActive('/contact') && 'text-blue-600'}`}>
+              Contact
+            </Link>
+            <Link to="/pages" className={`text-gray-600 hover:text-gray-900 ${isActive('/pages') && 'text-blue-600'}`}>
+              Pages
+            </Link>
           </div>
 
           {/* Desktop Right Side Items */}
@@ -84,14 +97,14 @@ function Navbar({ location }) {
             <Link to="/login" className="text-[#3B82F6] hover:text-blue-600">
               Login / Register
             </Link>
-            <button className="text-gray-600 hover:text-gray-900">
+            <button className="text-[#3B82F6] hover:text-blue-600">
               <Search className="h-5 w-5" />
             </button>
-            <button className="text-gray-600 hover:text-gray-900 relative">
+            <button className="text-[#3B82F6] hover:text-blue-600 relative">
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>
             </button>
-            <button className="text-gray-600 hover:text-gray-900 relative">
+            <button className="text-[#3B82F6] hover:text-blue-600 relative">
               <Heart className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>
             </button>
@@ -108,11 +121,20 @@ function Navbar({ location }) {
               <Link to="/shop" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
                 Shop
               </Link>
+              <Link to="/about" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
+                About
+              </Link>
+              <Link to="/blog" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
+                Blog
+              </Link>
               <Link to="/features" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
                 Features
               </Link>
               <Link to="/contact" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
                 Contact
+              </Link>
+              <Link to="/pages" className="text-gray-600 hover:bg-gray-50 py-3 text-center font-medium">
+                Pages
               </Link>
               <div className="border-t border-gray-200">
                 <Link to="/login" className="text-[#3B82F6] hover:bg-blue-50 py-3 text-center font-medium block">
