@@ -22,7 +22,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@assets': path.resolve(__dirname, 'src/assets')
+      '@assets': path.resolve(__dirname, 'src/assets'),
+      'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom')
     }
   },
   optimizeDeps: {
