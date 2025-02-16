@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, withRouter } from '../node_modules/react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import { 
   Home, 
   ShoppingBag, 

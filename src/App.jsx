@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Switch } from './node_modules/react-router-dom'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
@@ -8,6 +8,7 @@ import BlogPage from './pages/BlogPage'
 import AboutPage from './pages/AboutPage'
 import PagesPage from './pages/PagesPage'
 import ShopPage from './pages/ShopPage'
+import ProductDetail from './pages/ProductDetail'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/blog" component={BlogPage} />
             <Route path="/about" component={AboutPage} />
             <Route path="/pages" component={PagesPage} />
+            <Route path="/product/:id" component={ProductDetail} />
           </Switch>
         </main>
         <Footer />

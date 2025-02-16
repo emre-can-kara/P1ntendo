@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+
 // Product images array for bestseller products
 const bestsellerImages = [
   'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f', // Model in white dress
@@ -22,14 +25,23 @@ const products = bestsellerImages.map((image, index) => ({
 }));
 
 function BestsellerProducts() {
+  const location = useLocation()
+  const isProductDetailPage = location.pathname.includes('/product/')
+
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Başlık Kısmı */}
-        <div className="text-center mb-12">
-          <p className="text-sm text-gray-500 mb-2">Featured Products</p>
-          <h2 className="text-2xl font-bold text-gray-900">BESTSELLER PRODUCTS</h2>
-          <p className="text-sm text-gray-500 mt-2">Problems trying to resolve the conflict between</p>
+        {/* Başlık kısmını güncelle - sadece ana sayfada merkeze al */}
+        <div className={`mb-12 ${!isProductDetailPage ? 'text-center' : ''}`}>
+          {!isProductDetailPage ? (
+            <>
+              <p className="text-sm text-gray-500 mb-2">Featured Products</p>
+              <h2 className="text-2xl font-bold text-gray-900">BESTSELLER PRODUCTS</h2>
+              <p className="text-sm text-gray-500 mt-2">Problems trying to resolve the conflict between</p>
+            </>
+          ) : (
+            <h2 className="text-2xl font-bold text-gray-900 text-left">BESTSELLER PRODUCTS</h2>
+          )}
         </div>
 
         {/* Ürün Grid'i */}
@@ -58,12 +70,14 @@ function BestsellerProducts() {
           ))}
         </div>
 
-        {/* Load More Butonu */}
-        <div className="text-center mt-12">
-          <button className="border-2 border-blue-500 text-blue-500 px-8 py-2.5 rounded hover:bg-blue-50 transition-colors">
-            LOAD MORE PRODUCTS
-          </button>
-        </div>
+        {/* Load More butonu sadece ana sayfada */}
+        {!isProductDetailPage && (
+          <div className="text-center mt-12">
+            <button className="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700">
+              LOAD MORE PRODUCTS
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

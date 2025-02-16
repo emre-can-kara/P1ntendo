@@ -70,21 +70,31 @@ const productImages = [
 const products = [
   {
     id: 1,
-    image: productImages[0], // İlk ürün için ilk resim
+    image: productImages[0],
     title: "Graphic Design",
     department: "English Department",
-    oldPrice: "$16.48",
-    newPrice: "$6.48",
-    colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"]
+    oldPrice: "16.48",
+    newPrice: "6.48",
+    colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"],
+    rating: 4.5,
+    reviews: 10,
+    availability: "In Stock",
+    description: "Met minim Mollie non desert Alamo est sit claque dolor do met sent. NELIT official consequent door ENIM NELIT Mollie. Excitation venial consequent sent nostrum met.",
+    images: [productImages[0], productImages[1], productImages[2], productImages[3]]
   },
 ].concat(Array(11).fill(0).map((_, i) => ({
   id: i + 2,
-  image: productImages[i + 1], // Diğer ürünler için sırayla resimler
+  image: productImages[i + 1],
   title: "Graphic Design",
   department: "English Department",
-  oldPrice: "$16.48",
-  newPrice: "$6.48",
-  colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"]
+  oldPrice: "16.48",
+  newPrice: "6.48",
+  colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"],
+  rating: 4.5,
+  reviews: 10,
+  availability: "In Stock",
+  description: "Met minim Mollie non desert Alamo est sit claque dolor do met sent. NELIT official consequent door ENIM NELIT Mollie. Excitation venial consequent sent nostrum met.",
+  images: [productImages[i + 1], productImages[(i + 2) % 12], productImages[(i + 3) % 12], productImages[(i + 4) % 12]]
 })))
 
 function ShopPage() {
@@ -93,8 +103,8 @@ function ShopPage() {
   const history = useHistory()
   const [currentPage, setCurrentPage] = useState(1)
 
-  const handleProductClick = (productId) => {
-    history.push(`/product/${productId}`)
+  const handleProductClick = (product) => {
+    history.push(`/product/${product.id}`, { productData: product })
   }
 
   const handlePageChange = (page) => {
@@ -191,7 +201,7 @@ function ShopPage() {
               className={`group cursor-pointer ${
                 viewType === 'list' ? 'flex gap-8' : ''
               }`}
-              onClick={() => handleProductClick(product.id)}
+              onClick={() => handleProductClick(product)}
             >
               <div className={`relative ${viewType === 'list' ? 'w-1/3' : 'mb-4'}`}>
                 <img 

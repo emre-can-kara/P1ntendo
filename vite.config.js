@@ -13,7 +13,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['react-router-dom'],
+      external: ['react-router-dom']
     }
   },
   // Statik dosyalar için yapılandırma
@@ -22,8 +22,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@assets': path.resolve(__dirname, 'src/assets'),
-      'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom')
+      '@assets': path.resolve(__dirname, 'src/assets')
     }
   },
   optimizeDeps: {
