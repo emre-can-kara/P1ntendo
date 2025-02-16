@@ -11,6 +11,11 @@ export default defineConfig({
       usePolling: true,
     },
   },
+  build: {
+    rollupOptions: {
+      external: ['react-router-dom'],
+    }
+  },
   // Statik dosyalar için yapılandırma
   publicDir: 'public',
   assetsInclude: ['**/*.jpg', '**/*.png', '**/*.svg'],
@@ -19,5 +24,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
       '@assets': path.resolve(__dirname, 'src/assets')
     }
+  },
+  optimizeDeps: {
+    include: ['react-router-dom']
   }
 })
