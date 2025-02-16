@@ -17,7 +17,8 @@ function App() {
         <main className="flex-grow">
           <Switch>
             <Route exact path="/" component={HomePage} />
-            <Route path="/shop" component={ShopPage} />
+            <Route exact path="/shop" component={ShopPage} />
+            <Route path="/shop/page/:page" component={ShopPage} />
             <Route path="/features" component={Features} />
             <Route path="/contact" component={Contact} />
             <Route path="/blog" component={BlogPage} />

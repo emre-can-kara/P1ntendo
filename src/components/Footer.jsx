@@ -80,7 +80,7 @@ function Footer() {
 
         {/* Alt Bilgi */}
         <div className="border-t border-gray-200 mt-10 pt-6">
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-sm font-bold">
             Made With Love By Finland All Right Reserved
           </p>
         </div>

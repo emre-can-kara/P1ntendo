@@ -11,14 +11,9 @@ import {
 } from 'lucide-react'
 
 function Navbar({ location }) {
-  const [isShopOpen, setIsShopOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const isActive = (path) => location.pathname === path
-
-  const handleShopClick = () => {
-    setIsShopOpen(!isShopOpen)
-  }
 
   return (
     <nav className="bg-white shadow-md text-gray-800">
@@ -62,7 +57,6 @@ function Navbar({ location }) {
             <div className="relative group">
               <Link 
                 to="/shop"
-                onClick={handleShopClick}
                 className={`text-gray-600 hover:text-gray-900 flex items-center space-x-1 ${
                   isActive('/shop') && 'text-blue-600'
                 }`}
@@ -71,32 +65,30 @@ function Navbar({ location }) {
                 <span>Shop</span>
               </Link>
               
-              {isShopOpen && (
-                <div className="absolute left-0 mt-2 w-[400px] bg-white shadow-lg rounded-md z-50">
-                  <div className="grid grid-cols-2 gap-16 p-6">
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-4">Kadın</h3>
-                      <div className="space-y-3">
-                        <Link to="/kadin/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                        <Link to="/kadin/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
-                        <Link to="/kadin/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
-                        <Link to="/kadin/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                        <Link to="/kadin/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
-                      </div>
+              <div className="absolute left-0 mt-2 w-[400px] bg-white shadow-lg rounded-md z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="grid grid-cols-2 gap-16 p-6">
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-4">Kadın</h3>
+                    <div className="space-y-3">
+                      <Link to="/kadin/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                      <Link to="/kadin/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
+                      <Link to="/kadin/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
+                      <Link to="/kadin/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                      <Link to="/kadin/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-4">Erkek</h3>
-                      <div className="space-y-3">
-                        <Link to="/erkek/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                        <Link to="/erkek/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
-                        <Link to="/erkek/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
-                        <Link to="/erkek/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                        <Link to="/erkek/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
-                      </div>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-4">Erkek</h3>
+                    <div className="space-y-3">
+                      <Link to="/erkek/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                      <Link to="/erkek/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
+                      <Link to="/erkek/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
+                      <Link to="/erkek/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
+                      <Link to="/erkek/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
             <Link to="/about" className={`text-gray-600 hover:text-gray-900 ${isActive('/about') && 'text-blue-600'}`}>
