@@ -27,7 +27,7 @@ function Hero() {
       setCurrentSlide((prevSlide) => 
         prevSlide === slides.length - 1 ? 0 : prevSlide + 1
       )
-    }, 5000)
+    }, 4000)
 
     return () => clearInterval(timer)
   }, [])
@@ -41,7 +41,7 @@ function Hero() {
   }
 
   return (
-    <div id="home" className="relative h-[640px] max-w-[1440px] mx-auto overflow-hidden">
+    <div id="home" className="relative h-[640px] w-full overflow-hidden">
       <div 
         className="h-full transition-transform duration-500 ease-out flex"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -53,7 +53,7 @@ function Hero() {
           >
             {/* Background Image */}
             <div 
-              className="absolute inset-0 bg-cover bg-center"
+              className="absolute inset-0 bg-cover bg-center w-full"
               style={{ 
                 backgroundImage: `url(${bgImage})`
               }}
@@ -63,7 +63,7 @@ function Hero() {
             <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
             {/* Content */}
-            <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4">
+            <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-4 max-w-7xl mx-auto">
               <h1 className="text-5xl md:text-6xl font-bold mb-6 text-center">
                 {slide.title}
               </h1>
@@ -79,24 +79,26 @@ function Hero() {
       </div>
 
       {/* Navigation Arrows */}
-      <button 
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <button 
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <button 
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button 
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
 
-      {/* Line Navigation - Dots yerine çizgi kullanıyoruz */}
+      {/* Line Navigation */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3">
         {slides.map((_, index) => (
           <button
