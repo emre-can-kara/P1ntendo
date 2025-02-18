@@ -9,6 +9,7 @@ import AboutPage from './pages/AboutPage'
 import PagesPage from './pages/PagesPage'
 import ShopPage from './pages/ShopPage'
 import ProductDetail from './pages/ProductDetail'
+import SignupPage from './pages/SignupPage'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/about" component={AboutPage} />
             <Route path="/pages" component={PagesPage} />
             <Route path="/product/:id" component={ProductDetail} />
+            <Route path="/signup" component={SignupPage} />
           </Switch>
         </main>
         <Footer />

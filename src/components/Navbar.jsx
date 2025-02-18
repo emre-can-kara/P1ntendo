@@ -110,7 +110,7 @@ function Navbar({ location }) {
 
           {/* Desktop Right Side Items */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/login" className="text-[#3B82F6] hover:text-blue-600">
+            <Link to="/signup" className="text-[#3B82F6] hover:text-blue-600">
               Login / Register
             </Link>
             <button className="text-[#3B82F6] hover:text-blue-600">
@@ -158,7 +158,10 @@ function Navbar({ location }) {
                 Pages
               </Link>
               <div className="border-t border-gray-200">
-                <Link to="/login" className="text-[#3B82F6] hover:bg-blue-50 py-3 text-center font-medium block">
+                <Link 
+                  to="/signup" 
+                  className="text-[#3B82F6] hover:bg-blue-50 py-3 text-center font-medium block"
+                >
                   Login / Register
                 </Link>
               </div>
