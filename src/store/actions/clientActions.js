@@ -43,14 +43,77 @@ export const fetchRoles = () => async (dispatch, getState) => {
 export const loginUser = (credentials) => async (dispatch) => {
   try {
     const response = await axiosInstance.post('/login', credentials);
+    console.log('Login response:', response);
 
-    if (credentials.rememberMe) {
-      localStorage.setItem('token', response.data.token);
-    }
+    // Always store token
+    localStorage.setItem('token', response.data.token);
 
-    dispatch(setUser(response.data.user));
-    return response.data;
+    // Create user data with all necessary fields
+    const userData = {
+      id: response.data.id,
+      name: response.data.name,
+      email: credentials.email,
+      token: response.data.token,
+      // Add any other user data from response
+      ...response.data
+    };
+
+    // Store user data in localStorage
+    localStorage.setItem('userData', JSON.stringify(userData));
+
+    // Set user in Redux store
+    dispatch(setUser(userData));
+
+    return {
+      success: true,
+      message: 'Login successful!'
+    };
+
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Login failed');
+    console.error('Login error:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Login failed'
+    };
   }
+};
+
+export const checkAuthStatus = () => async (dispatch) => {
+  const token = localStorage.getItem('token');
+  const storedUserData = localStorage.getItem('userData');
+  
+  if (token && storedUserData) {
+    try {
+      // First try to use stored user data
+      const userData = JSON.parse(storedUserData);
+      dispatch(setUser(userData));
+
+      // Then try to refresh user data from server
+      const response = await axiosInstance.get('/user/me');
+      const updatedUserData = {
+        ...response.data,
+        email: response.data.email || userData.email,
+        token: token
+      };
+
+      // Update stored user data
+      localStorage.setItem('userData', JSON.stringify(updatedUserData));
+      dispatch(setUser(updatedUserData));
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      // Don't remove token on network errors
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
+        dispatch(setUser(null));
+      }
+    }
+  }
+};
+
+export const handleSignOut = () => (dispatch) => {
+  // Clear everything on sign out
+  localStorage.removeItem('token');
+  localStorage.removeItem('userData');
+  dispatch(setUser(null));
 }; 

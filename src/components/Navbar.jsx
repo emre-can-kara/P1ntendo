@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Link, withRouter } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, withRouter, useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { 
   Home, 
   ShoppingBag, 
@@ -7,16 +8,43 @@ import {
   Heart, 
   ShoppingCart, 
   Menu, 
-  X 
+  X,
+  LogOut,
+  User
 } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import Gravatar from 'react-gravatar'
+import { handleSignOut } from '../store/actions/clientActions'
 
 function Navbar({ location }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+  const dispatch = useDispatch()
+  const history = useHistory()
   const user = useSelector(state => state.client.user)
   const cart = useSelector(state => state.shoppingCart.cart)
   const cartItemCount = cart.reduce((total, item) => total + item.count, 0)
+
+  // Debug log
+  console.log('Current user:', user);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSignOutClick = () => {
+    dispatch(handleSignOut());
+    history.push('/');
+    setIsProfileDropdownOpen(false);
+  };
 
   const isActive = (path) => location.pathname === path
 
@@ -25,9 +53,51 @@ function Navbar({ location }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <span className="text-xl font-black text-gray-800">P1NTENDO</span>
-          </Link>
+          <div className="flex items-center">
+            <Link to="/" className="flex-shrink-0">
+              <span className="text-xl font-black text-gray-800">P1NTENDO</span>
+            </Link>
+            
+            {/* Show Gravatar if user is logged in */}
+            {user && user.email && (
+              <div className="ml-4 flex items-center space-x-2 relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center space-x-2 focus:outline-none"
+                >
+                  <Gravatar
+                    email={user.email}
+                    size={32}
+                    className="rounded-full border-2 border-blue-500 hover:border-blue-600 transition-colors"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    {user.name || user.email}
+                  </span>
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 top-10 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link
+                      to="/profile"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleSignOutClick}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Mobile Right Icons */}
           <div className="md:hidden flex items-center space-x-4">
@@ -115,18 +185,7 @@ function Navbar({ location }) {
 
           {/* Desktop Right Side Items */}
           <div className="hidden md:flex items-center space-x-6">
-            {user ? (
-              <div className="flex items-center space-x-2">
-                <Gravatar
-                  email={user.email}
-                  size={32}
-                  className="rounded-full"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  {user.name || user.email}
-                </span>
-              </div>
-            ) : (
+            {user ? null : (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"

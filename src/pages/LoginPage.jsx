@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import Gravatar from "react-gravatar";
@@ -14,17 +14,19 @@ function LoginPage() {
   
   const dispatch = useDispatch();
   const history = useHistory();
-  const location = useLocation();
 
   const onSubmit = async (data) => {
     try {
-      await dispatch(loginUser(data));
+      const result = await dispatch(loginUser(data));
       
-      // Başarılı login sonrası yönlendirme
-      const from = location.state?.from || "/";
-      history.replace(from);
+      if (result.success) {
+        toast.success(result.message);
+        history.push('/');
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
-      toast.error(error.message || "Login failed!");
+      toast.error("An unexpected error occurred");
     }
   };
 
