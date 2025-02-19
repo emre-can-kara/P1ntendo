@@ -68,105 +68,48 @@ function SignupPage() {
     setLoading(true);
     setErrorMessage("");
 
-    // İsim validasyonu
-    if (formData.name.length < 3) {
-      setLoading(false);
-      setErrorMessage("İsim en az 3 karakter olmalıdır");
-      return;
-    }
-
-    // Email validasyonu
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setLoading(false);
-      setErrorMessage("Geçerli bir e-posta adresi giriniz");
-      return;
-    }
-
-    // Şifre validasyonu
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(formData.password)) {
-      setLoading(false);
-      setErrorMessage("Şifre en az 8 karakter uzunluğunda olmalı ve en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir");
-      return;
-    }
-
-    // Şifre eşleşme kontrolü (zaten mevcut)
-    if (formData.password !== formData.confirmPassword) {
-      setLoading(false);
-      alert("Passwords do not match!");
-      return;
-    }
-
-    if (!formData.agreeToTerms) {
-      setLoading(false);
-      alert("You must agree to the terms and conditions!");
-      return;
-    }
-
-    // Mağaza validasyonları
-    if (formData.role_id && roles.find(role => role.id === parseInt(formData.role_id))?.name === "Mağaza") {
-      // Mağaza adı kontrolü
-      if (formData.store_name.length < 3) {
-        setLoading(false);
-        setErrorMessage("Mağaza adı en az 3 karakter olmalıdır");
-        return;
-      }
-
-      // Telefon numarası kontrolü
-      const phoneRegex = /^(\+90|0)?\s*5\d{2}\s*\d{3}\s*\d{2}\s*\d{2}$/;
-      if (!phoneRegex.test(formData.store_phone)) {
-        setLoading(false);
-        setErrorMessage("Geçerli bir Türkiye telefon numarası giriniz");
-        return;
-      }
-
-      // Vergi numarası kontrolü
-      const taxNoRegex = /^T\d{3}V\d{6}$/;
-      if (!taxNoRegex.test(formData.tax_no)) {
-        setLoading(false);
-        setErrorMessage("Geçerli bir vergi numarası giriniz (TXXXVXXXXXX formatında)");
-        return;
-      }
-
-      // IBAN kontrolü
-      const ibanRegex = /^TR\d{2}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{2}$/;
-      if (!ibanRegex.test(formData.bank_account)) {
-        setLoading(false);
-        setErrorMessage("Geçerli bir IBAN numarası giriniz");
-        return;
-      }
-    }
-
-    // ✅ Prepare the request payload
-    let requestData = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      role_id: parseInt(formData.role_id)
-    };
-
-    // Eğer mağaza rolü seçilmişse store objesi ekle
-    if (roles.find(role => role.id === parseInt(formData.role_id))?.name === "Mağaza") {
-      requestData = {
-        ...requestData,
-        store: {
-          name: formData.store_name,
-          phone: formData.store_phone,
-          tax_no: formData.tax_no,
-          bank_account: formData.bank_account
-        }
-      };
-    }
-
     try {
-      await dispatch(signupUser(requestData));
-      toast.success('Kayıt başarılı!');
-      history.push('/login');
+      // Validate password match
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error("Passwords do not match!");
+      }
+
+      // Validate terms
+      if (!formData.agreeToTerms) {
+        throw new Error("You must agree to the terms and conditions!");
+      }
+
+      const requestData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role_id: formData.role_id
+      };
+
+      // Add store data if applicable
+      if (roles.find(role => role.id === parseInt(formData.role_id))?.name === "Mağaza") {
+        requestData.store_name = formData.store_name;
+        requestData.store_phone = formData.store_phone;
+        requestData.tax_no = formData.tax_no;
+        requestData.bank_account = formData.bank_account;
+      }
+
+      console.log('Submitting signup data:', requestData); // Debug log
+
+      const result = await dispatch(signupUser(requestData));
+      
+      if (result.success) {
+        toast.success(result.message);
+        history.push('/login');
+      } else {
+        setErrorMessage(result.message);
+        toast.error(result.message);
+      }
     } catch (error) {
+      setErrorMessage(error.message || "An unexpected error occurred");
+      toast.error(error.message || "An unexpected error occurred");
+    } finally {
       setLoading(false);
-      console.error("Signup Error:", error.response?.data || error.message);
-      setErrorMessage(error.response?.data?.message || "An error occurred during signup");
     }
   };
 

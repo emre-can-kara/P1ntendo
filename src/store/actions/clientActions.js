@@ -116,4 +116,45 @@ export const handleSignOut = () => (dispatch) => {
   localStorage.removeItem('token');
   localStorage.removeItem('userData');
   dispatch(setUser(null));
+};
+
+export const signupUser = (userData) => async (dispatch) => {
+  try {
+    // Format the request data according to API expectations
+    const requestData = {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      role_id: parseInt(userData.role_id), // Make sure role_id is a number
+      store: null // Initialize store as null
+    };
+
+    // If it's a store signup, add store data
+    if (userData.store_name) {
+      requestData.store = {
+        name: userData.store_name,
+        phone: userData.store_phone,
+        tax_no: userData.tax_no,
+        bank_account: userData.bank_account
+      };
+    }
+
+    console.log('Signup request data:', requestData); // Debug log
+
+    const response = await axiosInstance.post('/signup', requestData);
+    console.log('Signup response:', response.data); // Debug log
+
+    // Don't automatically log in after signup
+    return {
+      success: true,
+      message: 'Signup successful! Please check your email to activate your account.'
+    };
+
+  } catch (error) {
+    console.error('Signup error:', error.response?.data || error);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Signup failed'
+    };
+  }
 }; 
