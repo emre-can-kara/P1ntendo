@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom"; // ✅ React Router v5
 import axiosInstance from "../utils/axios";
+import { useDispatch } from 'react-redux';
+import { signupUser } from '../store/actions/clientActions';
+import { toast } from 'react-toastify';
 
 function SignupPage() {
+  const dispatch = useDispatch();
+  const history = useHistory();
   const [roles, setRoles] = useState([]); // Stores fetched roles
   const [loading, setLoading] = useState(false); // Spinner state
   const [errorMessage, setErrorMessage] = useState(""); // Stores backend errors
-  const history = useHistory(); // ✅ React Router v5 history
+  const [role, setRole] = useState('customer'); // default to customer
 
   const [formData, setFormData] = useState({
     name: "", // ✅ Backend expects `name`
@@ -155,16 +160,9 @@ function SignupPage() {
     }
 
     try {
-      const response = await axiosInstance.post("/signup", requestData, {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-
-      setLoading(false);
-      alert("You need to click the link in your email to activate your account!");
-      history.goBack();
+      await dispatch(signupUser(requestData));
+      toast.success('Kayıt başarılı!');
+      history.push('/login');
     } catch (error) {
       setLoading(false);
       console.error("Signup Error:", error.response?.data || error.message);
