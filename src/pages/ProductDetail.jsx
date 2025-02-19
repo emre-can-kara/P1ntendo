@@ -4,12 +4,16 @@ import { ChevronRight, ChevronLeft, Heart, Share2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import BestsellerProducts from '../components/BestsellerProducts'
 import BrandLogos from '../components/BrandLogos'
+import { useDispatch } from 'react-redux'
+import { addToCart } from '../store/actions/shoppingCartActions'
+import { toast } from 'react-toastify'
 
 function ProductDetail() {
   const { id } = useParams()
   const location = useLocation()
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const dispatch = useDispatch()
 
   // ShopPage'den gelen ürün verisini kullan
   const product = location.state?.productData || {
@@ -37,6 +41,11 @@ function ProductDetail() {
 
   const prevImage = () => {
     setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length)
+  }
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product, 1))
+    toast.success('Product added to cart!')
   }
 
   return (
@@ -133,8 +142,11 @@ function ProductDetail() {
 
             {/* Actions */}
             <div className="flex items-center space-x-4 pt-6">
-              <button className="flex-1 bg-blue-600 text-white py-3 px-6 rounded hover:bg-blue-700">
-                Select Options
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 bg-blue-600 text-white py-3 px-6 rounded hover:bg-blue-700"
+              >
+                Add to Cart
               </button>
               <button className="p-3 border rounded-full hover:bg-gray-50">
                 <Heart className="h-6 w-6 text-gray-600" />

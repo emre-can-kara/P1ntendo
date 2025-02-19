@@ -10,6 +10,10 @@ import PagesPage from './pages/PagesPage'
 import ShopPage from './pages/ShopPage'
 import ProductDetail from './pages/ProductDetail'
 import SignupPage from './pages/SignupPage'
+import LoginPage from './pages/LoginPage'
+import CartPage from './pages/CartPage'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 function App() {
   return (
@@ -28,9 +32,12 @@ function App() {
             <Route path="/pages" component={PagesPage} />
             <Route path="/product/:id" component={ProductDetail} />
             <Route path="/signup" component={SignupPage} />
+            <Route path="/login" component={LoginPage} />
+            <Route path="/cart" component={CartPage} />
           </Switch>
         </main>
         <Footer />
+        <ToastContainer position="top-right" />
       </div>
     </Router>
   )

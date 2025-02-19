@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useHistory } from '/node_modules/react-router-dom'
 
 // Product images array for bestseller products
 const bestsellerImages = [
@@ -11,76 +10,102 @@ const bestsellerImages = [
   'https://images.unsplash.com/photo-1517841905240-472988babdf9', // Model in street style
   'https://images.unsplash.com/photo-1495385794356-15371f348c31', // Model in denim
   'https://images.unsplash.com/photo-1529139574466-a303027c1d8b', // Model in fashion
-  'https://images.unsplash.com/photo-1475180098004-ca77a66827be', // Model in elegant dress
-  'https://images.unsplash.com/photo-1483985988355-763728e1935b', // Model in shopping style
 ];
 
-const products = bestsellerImages.map((image, index) => ({
-  id: index + 1,
+// Mevcut bestseller ürünleri
+export const bestsellerProducts = bestsellerImages.map((image, index) => ({
+  id: `bestseller-${index + 1}`,
   title: "Graphic Design",
   department: "English Department",
-  oldPrice: "$16.48",
-  newPrice: "$6.48",
-  image: image
+  oldPrice: "16.48",
+  newPrice: "6.48",
+  colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"],
+  rating: 4.5,
+  reviews: 10,
+  availability: "In Stock",
+  description: "Met minim Mollie non desert Alamo est sit claque dolor do met sent...",
+  images: [
+    image,
+    bestsellerImages[(index + 1) % bestsellerImages.length],
+    bestsellerImages[(index + 2) % bestsellerImages.length],
+    bestsellerImages[(index + 3) % bestsellerImages.length]
+  ],
+  image: image // Geriye dönük uyumluluk için
 }));
 
 function BestsellerProducts() {
-  const location = useLocation()
-  const isProductDetailPage = location.pathname.includes('/product/')
+  const history = useHistory()
+
+  const handleProductClick = (product) => {
+    // Önce sayfanın en üstüne git
+    window.scrollTo(0, 0);
+    // Sonra yönlendirme yap
+    history.push(`/product/${product.id}`, { productData: product });
+  };
 
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Başlık kısmını güncelle - sadece ana sayfada merkeze al */}
-        <div className={`mb-12 ${!isProductDetailPage ? 'text-center' : ''}`}>
-          {!isProductDetailPage ? (
-            <>
-              <p className="text-sm text-gray-500 mb-2">Featured Products</p>
-              <h2 className="text-2xl font-bold text-gray-900">BESTSELLER PRODUCTS</h2>
-              <p className="text-sm text-gray-500 mt-2">Problems trying to resolve the conflict between</p>
-            </>
-          ) : (
-            <h2 className="text-2xl font-bold text-gray-900 text-left">BESTSELLER PRODUCTS</h2>
-          )}
+        {/* Başlık */}
+        <div className="mb-12 text-center">
+          <p className="text-sm text-gray-500 mb-2">Featured Products</p>
+          <h2 className="text-2xl font-bold text-gray-900">BESTSELLER PRODUCTS</h2>
+          <p className="text-sm text-gray-500 mt-2">Problems trying to resolve the conflict between</p>
         </div>
 
         {/* Ürün Grid'i */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {products.map((product) => (
-            <div key={product.id} className="group">
-              {/* Ürün Resmi */}
-              <div className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {bestsellerProducts.map(product => (
+            <div 
+              key={product.id}
+              className="group cursor-pointer"
+              onClick={() => handleProductClick(product)}
+            >
+              <div className="relative mb-4">
                 <img 
                   src={product.image}
                   alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full aspect-square object-cover rounded-lg"
                 />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg">
+                  <div className="absolute bottom-4 left-4 space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* Ürün Bilgileri */}
-              <div className="text-center">
-                <h3 className="text-base font-bold text-gray-900 mb-1">{product.title}</h3>
-                <p className="text-sm text-gray-500 mb-2">{product.department}</p>
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="text-gray-500 line-through text-sm">{product.oldPrice}</span>
-                  <span className="text-blue-500 font-bold text-sm">{product.newPrice}</span>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 text-center mb-1">
+                  {product.title}
+                </h3>
+                <p className="text-sm text-gray-500 text-center mb-2">
+                  {product.department}
+                </p>
+                <div className="flex justify-center items-center space-x-2">
+                  <span className="text-gray-400 line-through">${product.oldPrice}</span>
+                  <span className="text-blue-500 font-bold">${product.newPrice}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Load More butonu sadece ana sayfada */}
-        {!isProductDetailPage && (
-          <div className="text-center mt-12">
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700">
-              LOAD MORE PRODUCTS
-            </button>
-          </div>
-        )}
+        {/* Load More butonu */}
+        <div className="text-center mt-12">
+          <button 
+            onClick={() => history.push('/shop')}
+            className="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700"
+          >
+            LOAD MORE PRODUCTS
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
-export default BestsellerProducts 
+export default BestsellerProducts; 

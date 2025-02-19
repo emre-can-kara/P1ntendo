@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { ChevronRight, Grid, List } from 'lucide-react'
 import BrandLogos from '../components/BrandLogos'
+import { useDispatch } from 'react-redux'
+import { addToCart } from '../store/actions/shoppingCartActions'
+import { bestsellerProducts } from '../components/BestsellerProducts'
 
 // Category images array
 const categoryImages = [
@@ -102,14 +105,30 @@ function ShopPage() {
   const [sortBy, setSortBy] = useState('popularity')
   const history = useHistory()
   const [currentPage, setCurrentPage] = useState(1)
+  const dispatch = useDispatch()
+  const productsPerPage = 8
+
+  // Tüm ürünleri bestseller'ları da içerecek şekilde birleştir
+  const allProducts = [...bestsellerProducts, ...products]
+  
+  // Sayfalama için ürünleri böl
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = allProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+  const totalPages = Math.ceil(allProducts.length / productsPerPage)
 
   const handleProductClick = (product) => {
-    history.push(`/product/${product.id}`, { productData: product })
+    window.scrollTo(0, 0);
+    history.push(`/product/${product.id}`, { productData: product });
   }
 
   const handlePageChange = (page) => {
     setCurrentPage(page)
-    history.push(`/shop?page=${page}`)
+    window.scrollTo(0, 0)
+  }
+
+  const handleAddToCart = (product) => {
+    dispatch(addToCart(product, 1))
   }
 
   return (
@@ -195,7 +214,7 @@ function ShopPage() {
             ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' 
             : 'grid-cols-1'
         }`}>
-          {products.map(product => (
+          {currentProducts.map(product => (
             <div 
               key={product.id} 
               className={`group cursor-pointer ${
@@ -215,11 +234,6 @@ function ShopPage() {
                     <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
-                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </button>
                   </div>
@@ -258,45 +272,40 @@ function ShopPage() {
           <div className="flex items-center space-x-2">
             <button 
               onClick={() => handlePageChange(1)}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg ${
+                currentPage === 1 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+              }`}
             >
               First
             </button>
+            
+            {[...Array(totalPages)].map((_, i) => (
+              <button 
+                key={i + 1}
+                onClick={() => handlePageChange(i + 1)}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === i + 1 
+                    ? 'bg-blue-500 text-white' 
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
             <button 
-              onClick={() => handlePageChange(1)}
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
               className={`px-4 py-2 rounded-lg ${
-                currentPage === 1 
-                  ? 'bg-blue-500 text-white' 
+                currentPage === totalPages 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                   : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
               }`}
             >
-              1
-            </button>
-            <button 
-              onClick={() => handlePageChange(2)}
-              className={`px-4 py-2 rounded-lg ${
-                currentPage === 2 
-                  ? 'bg-blue-500 text-white' 
-                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              2
-            </button>
-            <button 
-              onClick={() => handlePageChange(3)}
-              className={`px-4 py-2 rounded-lg ${
-                currentPage === 3 
-                  ? 'bg-blue-500 text-white' 
-                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              3
-            </button>
-            <button 
-              onClick={() => handlePageChange(currentPage < 3 ? currentPage + 1 : 3)}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
-            >
-              Next
+              Last
             </button>
           </div>
         </div>

@@ -15,6 +15,11 @@ function SignupPage() {
     confirmPassword: "",
     role_id: "", // Set dynamically
     agreeToTerms: false, // ✅ Agree to terms checkbox
+    // Mağaza için ek alanlar
+    store_name: "",
+    store_phone: "",
+    tax_no: "",
+    bank_account: "",
   });
 
   // Fetch roles when the component mounts
@@ -44,14 +49,44 @@ function SignupPage() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Role değiştiğinde konsola yazdırarak kontrol edelim
+    if (name === "role_id") {
+      console.log("Selected role:", value);
+      console.log("Is store role:", roles.find(role => role.id === parseInt(value))?.name === "Mağaza");
+    }
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // ✅ Show spinner
-    setErrorMessage(""); // ✅ Reset error messages
+    setLoading(true);
+    setErrorMessage("");
 
+    // İsim validasyonu
+    if (formData.name.length < 3) {
+      setLoading(false);
+      setErrorMessage("İsim en az 3 karakter olmalıdır");
+      return;
+    }
+
+    // Email validasyonu
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setLoading(false);
+      setErrorMessage("Geçerli bir e-posta adresi giriniz");
+      return;
+    }
+
+    // Şifre validasyonu
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setLoading(false);
+      setErrorMessage("Şifre en az 8 karakter uzunluğunda olmalı ve en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir");
+      return;
+    }
+
+    // Şifre eşleşme kontrolü (zaten mevcut)
     if (formData.password !== formData.confirmPassword) {
       setLoading(false);
       alert("Passwords do not match!");
@@ -64,6 +99,40 @@ function SignupPage() {
       return;
     }
 
+    // Mağaza validasyonları
+    if (formData.role_id && roles.find(role => role.id === parseInt(formData.role_id))?.name === "Mağaza") {
+      // Mağaza adı kontrolü
+      if (formData.store_name.length < 3) {
+        setLoading(false);
+        setErrorMessage("Mağaza adı en az 3 karakter olmalıdır");
+        return;
+      }
+
+      // Telefon numarası kontrolü
+      const phoneRegex = /^(\+90|0)?\s*5\d{2}\s*\d{3}\s*\d{2}\s*\d{2}$/;
+      if (!phoneRegex.test(formData.store_phone)) {
+        setLoading(false);
+        setErrorMessage("Geçerli bir Türkiye telefon numarası giriniz");
+        return;
+      }
+
+      // Vergi numarası kontrolü
+      const taxNoRegex = /^T\d{3}V\d{6}$/;
+      if (!taxNoRegex.test(formData.tax_no)) {
+        setLoading(false);
+        setErrorMessage("Geçerli bir vergi numarası giriniz (TXXXVXXXXXX formatında)");
+        return;
+      }
+
+      // IBAN kontrolü
+      const ibanRegex = /^TR\d{2}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{2}$/;
+      if (!ibanRegex.test(formData.bank_account)) {
+        setLoading(false);
+        setErrorMessage("Geçerli bir IBAN numarası giriniz");
+        return;
+      }
+    }
+
     // ✅ Prepare the request payload
     let requestData = {
       name: formData.name,
@@ -71,6 +140,19 @@ function SignupPage() {
       password: formData.password,
       role_id: parseInt(formData.role_id)
     };
+
+    // Eğer mağaza rolü seçilmişse store objesi ekle
+    if (roles.find(role => role.id === parseInt(formData.role_id))?.name === "Mağaza") {
+      requestData = {
+        ...requestData,
+        store: {
+          name: formData.store_name,
+          phone: formData.store_phone,
+          tax_no: formData.tax_no,
+          bank_account: formData.bank_account
+        }
+      };
+    }
 
     try {
       const response = await axiosInstance.post("/signup", requestData, {
@@ -80,17 +162,25 @@ function SignupPage() {
         },
       });
 
-      setLoading(false); // ✅ Hide spinner
-
-      // ✅ Show activation warning and redirect to the previous page
+      setLoading(false);
       alert("You need to click the link in your email to activate your account!");
-      history.goBack(); // ✅ React Router v5 redirect to previous page
+      history.goBack();
     } catch (error) {
-      setLoading(false); // ✅ Hide spinner
+      setLoading(false);
       console.error("Signup Error:", error.response?.data || error.message);
       setErrorMessage(error.response?.data?.message || "An error occurred during signup");
     }
   };
+
+  // Mağaza alanlarını gösterme kontrolü için düzeltme
+  const isStoreRole = roles.find(role => role.id === parseInt(formData.role_id))?.name === "Mağaza";
+
+  // Debug için useEffect'i tutalım
+  useEffect(() => {
+    console.log("Current roles:", roles);
+    console.log("Current formData:", formData);
+    console.log("Is store role:", isStoreRole);
+  }, [roles, formData, isStoreRole]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -100,7 +190,10 @@ function SignupPage() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{" "}
-          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link 
+            to="/login" 
+            className="font-medium text-blue-600 hover:text-blue-500"
+          >
             sign in to your account
           </Link>
         </p>
@@ -116,10 +209,12 @@ function SignupPage() {
                 name="name"
                 type="text"
                 required
+                minLength={3}
                 value={formData.name}
                 onChange={handleChange}
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <p className="mt-1 text-xs text-gray-500">En az 3 karakter giriniz</p>
             </div>
 
             {/* Email */}
@@ -129,10 +224,12 @@ function SignupPage() {
                 name="email"
                 type="email"
                 required
+                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
                 value={formData.email}
                 onChange={handleChange}
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <p className="mt-1 text-xs text-gray-500">Geçerli bir e-posta adresi giriniz</p>
             </div>
 
             {/* Password */}
@@ -142,10 +239,12 @@ function SignupPage() {
                 name="password"
                 type="password"
                 required
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
                 value={formData.password}
                 onChange={handleChange}
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <p className="mt-1 text-xs text-gray-500">Şifre en az 8 karakter uzunluğunda olmalı ve en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir</p>
             </div>
 
             {/* Confirm Password */}
@@ -164,14 +263,95 @@ function SignupPage() {
             {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Role</label>
-              <select name="role_id" value={formData.role_id} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              {roles.map((role) => (
-    <option key={role.id} value={role.id}>
-      {role.name} {/* Show "Yönetici", "Mağaza", "Müşteri" */}
-    </option>
+              <select 
+                name="role_id" 
+                value={formData.role_id} 
+                onChange={handleChange} 
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Rol Seçiniz</option>
+                {roles.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
+                  </option>
                 ))}
               </select>
             </div>
+
+            {/* Debug bilgisi */}
+            <div className="text-xs text-gray-500">
+              Current Role ID: {formData.role_id}
+              <br />
+              Is Store Role: {isStoreRole ? "Yes" : "No"}
+            </div>
+
+            {/* Mağaza için ek alanlar */}
+            {isStoreRole && (
+              <>
+                {/* Mağaza Adı */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Mağaza Adı</label>
+                  <input
+                    name="store_name"
+                    type="text"
+                    required
+                    minLength={3}
+                    value={formData.store_name}
+                    onChange={handleChange}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">En az 3 karakter giriniz</p>
+                </div>
+
+                {/* Mağaza Telefonu */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Mağaza Telefonu</label>
+                  <input
+                    name="store_phone"
+                    type="tel"
+                    required
+                    pattern="^(\+90|0)?\s*5\d{2}\s*\d{3}\s*\d{2}\s*\d{2}$"
+                    value={formData.store_phone}
+                    onChange={handleChange}
+                    placeholder="+90 5XX XXX XX XX"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Türkiye telefon formatında giriniz</p>
+                </div>
+
+                {/* Vergi Numarası */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Vergi Numarası</label>
+                  <input
+                    name="tax_no"
+                    type="text"
+                    required
+                    pattern="^T\d{3}V\d{6}$"
+                    value={formData.tax_no}
+                    onChange={handleChange}
+                    placeholder="TXXXVXXXXXX"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">TXXXVXXXXXX formatında giriniz</p>
+                </div>
+
+                {/* IBAN */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Banka Hesabı (IBAN)</label>
+                  <input
+                    name="bank_account"
+                    type="text"
+                    required
+                    pattern="^TR\d{2}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{2}$"
+                    value={formData.bank_account}
+                    onChange={handleChange}
+                    placeholder="TR__ ____ ____ ____ ____ ____ __"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Geçerli bir IBAN numarası giriniz</p>
+                </div>
+              </>
+            )}
 
             {/* Agree to Terms */}
             <div className="flex items-center">

@@ -9,9 +9,14 @@ import {
   Menu, 
   X 
 } from 'lucide-react'
+import { useSelector } from 'react-redux'
+import Gravatar from 'react-gravatar'
 
 function Navbar({ location }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const user = useSelector(state => state.client.user)
+  const cart = useSelector(state => state.shoppingCart.cart)
+  const cartItemCount = cart.reduce((total, item) => total + item.count, 0)
 
   const isActive = (path) => location.pathname === path
 
@@ -110,16 +115,42 @@ function Navbar({ location }) {
 
           {/* Desktop Right Side Items */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/signup" className="text-[#3B82F6] hover:text-blue-600">
-              Login / Register
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Gravatar
+                  email={user.email}
+                  size={32}
+                  className="rounded-full"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {user.name || user.email}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/login"
+                  className="text-gray-700 hover:text-gray-900"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
             <button className="text-[#3B82F6] hover:text-blue-600">
               <Search className="h-5 w-5" />
             </button>
-            <button className="text-[#3B82F6] hover:text-blue-600 relative">
+            <Link to="/cart" className="text-[#3B82F6] hover:text-blue-600 relative">
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>
-            </button>
+              <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">
+                {cartItemCount}
+              </span>
+            </Link>
             <button className="text-[#3B82F6] hover:text-blue-600 relative">
               <Heart className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>
@@ -158,12 +189,25 @@ function Navbar({ location }) {
                 Pages
               </Link>
               <div className="border-t border-gray-200">
-                <Link 
-                  to="/signup" 
-                  className="text-[#3B82F6] hover:bg-blue-50 py-3 text-center font-medium block"
-                >
-                  Login / Register
-                </Link>
+                {user ? (
+                  <div className="flex items-center justify-center space-x-2 py-3">
+                    <Gravatar
+                      email={user.email}
+                      size={24}
+                      className="rounded-full"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.name || user.email}
+                    </span>
+                  </div>
+                ) : (
+                  <Link 
+                    to="/login" 
+                    className="text-[#3B82F6] hover:bg-blue-50 py-3 text-center font-medium block"
+                  >
+                    Login / Register
+                  </Link>
+                )}
               </div>
             </div>
           </div>
