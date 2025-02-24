@@ -1,121 +1,54 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { ChevronRight, Grid, List } from 'lucide-react'
 import BrandLogos from '../components/BrandLogos'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { addToCart } from '../store/actions/shoppingCartActions'
-import { bestsellerProducts } from '../components/BestsellerProducts'
+import { fetchCategories, fetchCategoryProducts, fetchProducts } from '../store/actions/productActions'
+import { FETCH_STATES } from '../store/reducers/productReducer'
 
-// Category images array
-const categoryImages = [
-  'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2', // Men's Fashion Category
-  'https://images.unsplash.com/photo-1581044777550-4cfa60707c03', // Women's Fashion Category
-  'https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93', // Accessories Category
-  'https://images.unsplash.com/photo-1445205170230-053b83016050', // Kids Fashion Category
-  'https://images.unsplash.com/photo-1483985988355-763728e1935b', // Sportswear Category
-]
+// Update fallback image
+const fallbackImage = 'https://placehold.co/400x400';
 
-const categories = [
-  {
-    id: 1,
-    title: "CLOTHS",
-    items: "5 Items",
-    image: categoryImages[0],
-    bgColor: "bg-gray-800"
-  },
-  {
-    id: 2,
-    title: "CLOTHS",
-    items: "5 Items",
-    image: categoryImages[1],
-    bgColor: "bg-cyan-600"
-  },
-  {
-    id: 3,
-    title: "CLOTHS",
-    items: "5 Items",
-    image: categoryImages[2],
-    bgColor: "bg-gray-100"
-  },
-  {
-    id: 4,
-    title: "CLOTHS",
-    items: "5 Items",
-    image: categoryImages[3],
-    bgColor: "bg-pink-200"
-  },
-  {
-    id: 5,
-    title: "CLOTHS",
-    items: "5 Items",
-    image: categoryImages[4],
-    bgColor: "bg-purple-200"
-  }
-]
-
-// Product images array - updated with fashion model images
-const productImages = [
-  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f', // Model in white dress
-  'https://images.unsplash.com/photo-1539109136881-3be0616acf4b', // Model in casual wear
-  'https://images.unsplash.com/photo-1496747611176-843222e1e57c', // Model in summer dress
-  'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8', // Male model in casual
-  'https://images.unsplash.com/photo-1485968579580-b6d095142e6e', // Model in winter wear
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9', // Model in street style
-  'https://images.unsplash.com/photo-1495385794356-15371f348c31', // Model in denim
-  'https://images.unsplash.com/photo-1529139574466-a303027c1d8b', // Model in fashion
-  'https://images.unsplash.com/photo-1475180098004-ca77a66827be', // Model in elegant dress
-  'https://images.unsplash.com/photo-1483985988355-763728e1935b', // Model in shopping style
-  'https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93', // Model in trendy outfit
-  'https://images.unsplash.com/photo-1509631179647-0177331693ae', // Model in stylish wear
-]
-
-// Update products array to include images
-const products = [
-  {
-    id: 1,
-    image: productImages[0],
-    title: "Graphic Design",
-    department: "English Department",
-    oldPrice: "16.48",
-    newPrice: "6.48",
-    colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"],
-    rating: 4.5,
-    reviews: 10,
-    availability: "In Stock",
-    description: "Met minim Mollie non desert Alamo est sit claque dolor do met sent. NELIT official consequent door ENIM NELIT Mollie. Excitation venial consequent sent nostrum met.",
-    images: [productImages[0], productImages[1], productImages[2], productImages[3]]
-  },
-].concat(Array(11).fill(0).map((_, i) => ({
-  id: i + 2,
-  image: productImages[i + 1],
-  title: "Graphic Design",
-  department: "English Department",
-  oldPrice: "16.48",
-  newPrice: "6.48",
-  colors: ["#23A6F0", "#23856D", "#E77C40", "#23856D"],
-  rating: 4.5,
-  reviews: 10,
-  availability: "In Stock",
-  description: "Met minim Mollie non desert Alamo est sit claque dolor do met sent. NELIT official consequent door ENIM NELIT Mollie. Excitation venial consequent sent nostrum met.",
-  images: [productImages[i + 1], productImages[(i + 2) % 12], productImages[(i + 3) % 12], productImages[(i + 4) % 12]]
-})))
-
-function ShopPage() {
+function ShopPage({ match }) {
   const [viewType, setViewType] = useState('grid')
   const [sortBy, setSortBy] = useState('popularity')
   const history = useHistory()
   const [currentPage, setCurrentPage] = useState(1)
   const dispatch = useDispatch()
   const productsPerPage = 8
-
-  // Tüm ürünleri bestseller'ları da içerecek şekilde birleştir
-  const allProducts = [...bestsellerProducts, ...products]
   
-  // Sayfalama için ürünleri böl
-  const indexOfLastProduct = currentPage * productsPerPage
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
-  const currentProducts = allProducts.slice(indexOfFirstProduct, indexOfLastProduct)
-  const totalPages = Math.ceil(allProducts.length / productsPerPage)
+  const { 
+    categories = [], 
+    fetchState, 
+    error,
+    productList = [],
+    total = 0 
+  } = useSelector(state => state.product);
+  
+  const { categoryId } = match.params;
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+    
+    if (!categoryId) {
+      dispatch(fetchProducts());
+    } else {
+      dispatch(fetchCategoryProducts(categoryId));
+    }
+  }, [dispatch, categoryId]);
+
+  // Get top 5 categories by rating
+  const topCategories = [...categories]
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 5);
+
+  // Pagination with safety checks
+  const safeProductList = productList || [];
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = safeProductList.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(safeProductList.length / productsPerPage);
 
   const handleProductClick = (product) => {
     window.scrollTo(0, 0);
@@ -131,9 +64,86 @@ function ShopPage() {
     dispatch(addToCart(product, 1))
   }
 
+  const handleCategoryClick = (category) => {
+    // Determine gender from category gender_id (assuming 1 for women, 2 for men)
+    const gender = category.gender_id === 1 ? 'kadin' : 'erkek';
+    
+    // Convert category name to URL friendly format
+    const categorySlug = category.name
+      .toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[ğ]/g, 'g')
+      .replace(/[ü]/g, 'u')
+      .replace(/[ş]/g, 's')
+      .replace(/[ı]/g, 'i')
+      .replace(/[ö]/g, 'o')
+      .replace(/[ç]/g, 'c');
+
+    // Navigate to the category page
+    history.push(`/shop/${gender}/${categorySlug}/${category.id}`);
+  };
+
+  // Helper function to get product image URL
+  const getProductImageUrl = (product) => {
+    if (!product) return fallbackImage;
+    // API returns images array with url property
+    if (product.images && product.images.length > 0) {
+      return product.images[0].url; // Access the url property
+    }
+    return fallbackImage;
+  };
+
+  // Helper function to get category image URL
+  const getCategoryImageUrl = (category) => {
+    if (!category) return fallbackImage;
+    // API returns img field directly
+    return category.img || fallbackImage;
+  };
+
+  // Group categories by gender
+  const categoriesByGender = categories.reduce((acc, category) => {
+    const gender = category.gender === 'k' ? 'kadin' : 'erkek';
+    if (!acc[gender]) {
+      acc[gender] = [];
+    }
+    acc[gender].push(category);
+    return acc;
+  }, { kadin: [], erkek: [] });
+
+  // Show loading spinner while fetching
+  if (fetchState === FETCH_STATES.FETCHING) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state with retry button
+  if (fetchState === FETCH_STATES.FAILED) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            Error loading categories: {error || 'Unknown error'}
+          </div>
+          <button
+            onClick={() => dispatch(fetchCategories())}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* Header */}
+      {/* Header with Dropdown */}
       <div className="bg-gray-100 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -144,27 +154,97 @@ function ShopPage() {
               <span className="text-gray-400">Shop</span>
             </div>
           </div>
+
+          {/* Categories Dropdown */}
+          <div className="relative group mt-4">
+            <button className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+              <span>Categories</span>
+              <ChevronRight className="h-4 w-4 transform group-hover:rotate-90 transition-transform" />
+            </button>
+            
+            <div className="absolute left-0 mt-2 w-[400px] bg-white shadow-lg rounded-md z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+              <div className="grid grid-cols-2 gap-16 p-6">
+                {/* Women's Categories */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-4">Kadın</h3>
+                  <div className="space-y-3">
+                    {categoriesByGender.kadin.map(category => (
+                      <Link
+                        key={category.id}
+                        to={`/shop/kadin/${category.code}/${category.id}`}
+                        className="block text-gray-500 hover:text-gray-900"
+                      >
+                        {category.title}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Men's Categories */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-4">Erkek</h3>
+                  <div className="space-y-3">
+                    {categoriesByGender.erkek.map(category => (
+                      <Link
+                        key={category.id}
+                        to={`/shop/erkek/${category.code}/${category.id}`}
+                        className="block text-gray-500 hover:text-gray-900"
+                      >
+                        {category.title}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Categories Grid */}
+      {/* Top Categories Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 className="text-2xl font-bold mb-8">Top Categories</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {categories.map(category => (
-            <div 
-              key={category.id} 
-              className={`relative overflow-hidden rounded-lg ${category.bgColor} group cursor-pointer`}
+          {topCategories.map(category => (
+            <Link 
+              key={category.id}
+              to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.code}/${category.id}`}
+              className="relative overflow-hidden rounded-lg bg-gray-100 group cursor-pointer transform transition-transform duration-300 hover:scale-105"
             >
-              <img 
-                src={category.image} 
-                alt={category.title}
-                className="w-full h-full object-cover aspect-[3/4] group-hover:scale-110 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-white">
-                <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
-                <p className="text-sm">{category.items}</p>
+              <div className="aspect-w-3 aspect-h-4">
+                <img 
+                  src={category.img}
+                  alt={category.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = fallbackImage;
+                    e.target.onerror = null;
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent opacity-60 group-hover:opacity-70 transition-opacity duration-300" />
+                
+                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
+                  <h3 className="text-xl font-bold mb-2">{category.title}</h3>
+                  <div className="flex items-center space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span 
+                        key={i}
+                        className={`${
+                          i < Math.floor(category.rating)
+                            ? 'text-yellow-400'
+                            : 'text-gray-400'
+                        }`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                    <span className="ml-2 text-sm">
+                      ({category.rating?.toFixed(1)})
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -173,7 +253,12 @@ function ShopPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter Bar */}
         <div className="flex justify-between items-center mb-8">
-          <p className="text-gray-500">Showing all {products.length} results</p>
+          <p className="text-gray-500">
+            Showing {productList.length} of {total} products
+            {categoryId && categories.find(c => c.id === parseInt(categoryId)) && 
+              ` in ${categories.find(c => c.id === parseInt(categoryId)).title}`
+            }
+          </p>
           
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -214,101 +299,88 @@ function ShopPage() {
             ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' 
             : 'grid-cols-1'
         }`}>
-          {currentProducts.map(product => (
+          {productList.map(product => (
             <div 
               key={product.id} 
-              className={`group cursor-pointer ${
-                viewType === 'list' ? 'flex gap-8' : ''
-              }`}
+              className="group cursor-pointer"
               onClick={() => handleProductClick(product)}
             >
-              <div className={`relative ${viewType === 'list' ? 'w-1/3' : 'mb-4'}`}>
+              <div className="relative mb-4">
                 <img 
-                  src={product.image} 
-                  alt={product.title}
+                  src={product.images[0].url}
+                  alt={product.name}
                   className="w-full aspect-square object-cover rounded-lg"
+                  onError={(e) => {
+                    console.log('Image load error for product:', product.id);
+                    e.target.src = fallbackImage;
+                    e.target.onerror = null;
+                  }}
                 />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg">
-                  <div className="absolute bottom-4 left-4 space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-lg" />
               </div>
-
-              <div className={viewType === 'list' ? 'w-2/3 py-4' : ''}>
-                <h3 className="text-lg font-bold text-gray-900 text-center mb-1">
-                  {product.title}
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  {product.name}
                 </h3>
-                <p className="text-sm text-gray-500 text-center mb-2">
-                  {product.department}
+                <p className="text-blue-500 font-bold">
+                  ${Number(product.price).toFixed(2)}
                 </p>
-
-                <div className="flex justify-center items-center space-x-2 mb-3">
-                  <span className="text-gray-400 line-through">{product.oldPrice}</span>
-                  <span className="text-blue-500 font-bold">{product.newPrice}</span>
-                </div>
-
-                <div className="flex justify-center space-x-2">
-                  {product.colors.map((color, index) => (
-                    <div
-                      key={index}
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
               </div>
             </div>
           ))}
         </div>
 
+        {/* Show message if no products */}
+        {!productList.length && (
+          <div className="text-center py-12 text-gray-500">
+            No products found
+          </div>
+        )}
+
         {/* Pagination */}
-        <div className="flex justify-center mt-12 mb-8">
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-lg ${
-                currentPage === 1 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              First
-            </button>
-            
-            {[...Array(totalPages)].map((_, i) => (
+        {safeProductList.length > 0 && (
+          <div className="flex justify-center mt-12">
+            <div className="flex items-center space-x-2">
               <button 
-                key={i + 1}
-                onClick={() => handlePageChange(i + 1)}
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
                 className={`px-4 py-2 rounded-lg ${
-                  currentPage === i + 1 
-                    ? 'bg-blue-500 text-white' 
+                  currentPage === 1 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                     : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                {i + 1}
+                First
               </button>
-            ))}
+              
+              {[...Array(totalPages)].map((_, i) => (
+                <button 
+                  key={i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === i + 1 
+                      ? 'bg-blue-500 text-white' 
+                      : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
 
-            <button 
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-lg ${
-                currentPage === totalPages 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Last
-            </button>
+              <button 
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === totalPages 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Last
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Brand Logos */}

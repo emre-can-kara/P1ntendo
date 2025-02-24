@@ -15,6 +15,8 @@ import {
 import { useSelector } from 'react-redux'
 import Gravatar from 'react-gravatar'
 import { handleSignOut } from '../store/actions/clientActions'
+import { fetchCategories } from '../store/actions/productActions'
+import { FETCH_STATES } from '../store/reducers/productReducer'
 
 function Navbar({ location }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -25,9 +27,19 @@ function Navbar({ location }) {
   const user = useSelector(state => state.client.user)
   const cart = useSelector(state => state.shoppingCart.cart)
   const cartItemCount = cart.reduce((total, item) => total + item.count, 0)
+  const { categories = [], fetchState } = useSelector(state => state.product)
 
   // Debug log
   console.log('Current user:', user);
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Debug logs
+  console.log('Categories in Navbar:', categories);
+  console.log('Fetch state:', fetchState);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -47,6 +59,40 @@ function Navbar({ location }) {
   };
 
   const isActive = (path) => location.pathname === path
+
+  // Group categories by gender
+  const categoriesByGender = categories.reduce((acc, category) => {
+    const gender = category.gender === 'k' ? 'kadin' : 'erkek';
+    if (!acc[gender]) {
+      acc[gender] = [];
+    }
+    acc[gender].push(category);
+    return acc;
+  }, { kadin: [], erkek: [] });
+
+  // Debug log grouped categories
+  console.log('Grouped categories:', categoriesByGender);
+
+  // Create safe URL for category
+  const createCategoryUrl = (category) => {
+    if (!category || !category.name) return '/shop';
+
+    const gender = category.gender_id === 1 ? 'kadin' : 'erkek';
+    const categorySlug = category.code?.split(':')[1] || category.name
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[ğ]/g, 'g')
+      .replace(/[ü]/g, 'u')
+      .replace(/[ş]/g, 's')
+      .replace(/[ı]/g, 'i')
+      .replace(/[ö]/g, 'o')
+      .replace(/[ç]/g, 'c')
+      .replace(/[^a-z0-9-]/g, '');
+
+    return `/shop/${gender}/${categorySlug}/${category.id}`;
+  };
 
   return (
     <nav className="bg-white shadow-md text-gray-800">
@@ -129,12 +175,11 @@ function Navbar({ location }) {
               <span>Home</span>
             </Link>
             
+            {/* Shop Dropdown */}
             <div className="relative group">
               <Link 
                 to="/shop"
-                className={`text-gray-600 hover:text-gray-900 flex items-center space-x-1 ${
-                  isActive('/shop') && 'text-blue-600'
-                }`}
+                className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
               >
                 <ShoppingBag className="h-5 w-5" />
                 <span>Shop</span>
@@ -142,26 +187,56 @@ function Navbar({ location }) {
               
               <div className="absolute left-0 mt-2 w-[400px] bg-white shadow-lg rounded-md z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                 <div className="grid grid-cols-2 gap-16 p-6">
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-4">Kadın</h3>
-                    <div className="space-y-3">
-                      <Link to="/kadin/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                      <Link to="/kadin/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
-                      <Link to="/kadin/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
-                      <Link to="/kadin/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                      <Link to="/kadin/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
+                  {/* Loading State */}
+                  {fetchState === FETCH_STATES.FETCHING && (
+                    <div className="col-span-2 text-center py-4">
+                      Loading categories...
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-4">Erkek</h3>
-                    <div className="space-y-3">
-                      <Link to="/erkek/bags" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                      <Link to="/erkek/belts" className="block text-gray-500 hover:text-gray-900">Belts</Link>
-                      <Link to="/erkek/cosmetics" className="block text-gray-500 hover:text-gray-900">Cosmetics</Link>
-                      <Link to="/erkek/bags-2" className="block text-gray-500 hover:text-gray-900">Bags</Link>
-                      <Link to="/erkek/hats" className="block text-gray-500 hover:text-gray-900">Hats</Link>
+                  )}
+
+                  {/* Error State */}
+                  {fetchState === FETCH_STATES.FAILED && (
+                    <div className="col-span-2 text-center py-4 text-red-600">
+                      Failed to load categories
                     </div>
-                  </div>
+                  )}
+
+                  {/* Categories Content */}
+                  {fetchState === FETCH_STATES.FETCHED && (
+                    <>
+                      {/* Women's Categories */}
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-4">Kadın</h3>
+                        <div className="space-y-3">
+                          {categoriesByGender.kadin.map(category => (
+                            <Link
+                              key={category.id}
+                              to={`/shop/kadin/${category.code}/${category.id}`}
+                              className="block text-gray-500 hover:text-gray-900"
+                            >
+                              {category.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Men's Categories */}
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-4">Erkek</h3>
+                        <div className="space-y-3">
+                          {categoriesByGender.erkek.map(category => (
+                            <Link
+                              key={category.id}
+                              to={`/shop/erkek/${category.code}/${category.id}`}
+                              className="block text-gray-500 hover:text-gray-900"
+                            >
+                              {category.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

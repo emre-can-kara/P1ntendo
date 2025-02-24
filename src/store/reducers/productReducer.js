@@ -6,7 +6,10 @@ const initialState = {
   limit: 25,
   offset: 0,
   filter: '',
-  fetchState: 'NOT_FETCHED'
+  fetchState: 'NOT_FETCHED',
+  selectedCategory: null,
+  categoryFetchError: null,
+  error: null
 };
 
 // Action Types
@@ -17,6 +20,9 @@ export const SET_LIMIT = 'SET_LIMIT';
 export const SET_OFFSET = 'SET_OFFSET';
 export const SET_FILTER = 'SET_FILTER';
 export const SET_FETCH_STATE = 'SET_FETCH_STATE';
+export const SET_SELECTED_CATEGORY = 'SET_SELECTED_CATEGORY';
+export const SET_CATEGORY_FETCH_ERROR = 'SET_CATEGORY_FETCH_ERROR';
+export const SET_FETCH_ERROR = 'SET_FETCH_ERROR';
 
 // Fetch States
 export const FETCH_STATES = {
@@ -32,12 +38,24 @@ const productReducer = (state = initialState, action) => {
     case SET_CATEGORIES:
       return {
         ...state,
-        categories: action.payload
+        categories: action.payload,
+        categoryFetchError: null
+      };
+    case SET_SELECTED_CATEGORY:
+      return {
+        ...state,
+        selectedCategory: action.payload
+      };
+    case SET_CATEGORY_FETCH_ERROR:
+      return {
+        ...state,
+        categoryFetchError: action.payload
       };
     case SET_PRODUCT_LIST:
       return {
         ...state,
-        productList: action.payload
+        productList: action.payload,
+        error: null
       };
     case SET_TOTAL:
       return {
@@ -59,10 +77,16 @@ const productReducer = (state = initialState, action) => {
         ...state,
         filter: action.payload
       };
+    case SET_FETCH_ERROR:
+      return {
+        ...state,
+        error: action.payload
+      };
     case SET_FETCH_STATE:
       return {
         ...state,
-        fetchState: action.payload
+        fetchState: action.payload,
+        error: action.payload === FETCH_STATES.FETCHING ? null : state.error
       };
     default:
       return state;
