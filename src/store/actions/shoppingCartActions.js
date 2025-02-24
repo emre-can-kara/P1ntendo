@@ -52,4 +52,12 @@ export const fetchRoles = () => async (dispatch, getState) => {
   } catch (error) {
     console.error('Error fetching roles:', error);
   }
+};
+
+// Load cart from localStorage
+export const loadCart = () => (dispatch) => {
+  const savedCart = localStorage.getItem('cart');
+  if (savedCart) {
+    dispatch(setCart(JSON.parse(savedCart)));
+  }
 }; 

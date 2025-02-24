@@ -42,72 +42,73 @@ export const fetchRoles = () => async (dispatch, getState) => {
 
 export const loginUser = (credentials) => async (dispatch) => {
   try {
-    const response = await axiosInstance.post('/login', credentials);
-    console.log('Login response:', response);
-
-    // Always store token
-    localStorage.setItem('token', response.data.token);
-
-    // Create user data with all necessary fields
-    const userData = {
-      id: response.data.id,
-      name: response.data.name,
+    // First, make login request
+    const response = await axiosInstance.post('/login', {
       email: credentials.email,
-      token: response.data.token,
-      // Add any other user data from response
-      ...response.data
-    };
+      password: credentials.password
+    });
 
-    // Store user data in localStorage
-    localStorage.setItem('userData', JSON.stringify(userData));
+    console.log('Login response:', response.data);
 
-    // Set user in Redux store
-    dispatch(setUser(userData));
+    if (!response.data.token) {
+      throw new Error('No token received from login');
+    }
 
-    return {
-      success: true,
-      message: 'Login successful!'
-    };
+    const token = response.data.token;
+    
+    // Store token
+    localStorage.setItem('token', token);
+    axiosInstance.defaults.headers.common['Authorization'] = token;
 
+    // Now verify the token
+    const verifyResponse = await axiosInstance.get('/verify');
+    console.log('Verify response:', verifyResponse.data);
+
+    // If verification successful, set user data
+    dispatch(setUser({
+      ...verifyResponse.data,
+      token
+    }));
+
+    return { success: true, message: 'Login successful!' };
   } catch (error) {
-    console.error('Login error:', error);
-    return {
-      success: false,
-      message: error.response?.data?.message || error.message || 'Login failed'
+    console.error('Login/verify error:', error);
+    localStorage.removeItem('token');
+    delete axiosInstance.defaults.headers.common['Authorization'];
+    return { 
+      success: false, 
+      message: error.response?.data?.message || 'Login failed' 
     };
   }
 };
 
 export const checkAuthStatus = () => async (dispatch) => {
   const token = localStorage.getItem('token');
-  const storedUserData = localStorage.getItem('userData');
   
-  if (token && storedUserData) {
-    try {
-      // First try to use stored user data
-      const userData = JSON.parse(storedUserData);
-      dispatch(setUser(userData));
+  if (!token) return;
 
-      // Then try to refresh user data from server
-      const response = await axiosInstance.get('/user/me');
-      const updatedUserData = {
-        ...response.data,
-        email: response.data.email || userData.email,
-        token: token
-      };
+  try {
+    // Set token in headers
+    axiosInstance.defaults.headers.common['Authorization'] = token;
 
-      // Update stored user data
-      localStorage.setItem('userData', JSON.stringify(updatedUserData));
-      dispatch(setUser(updatedUserData));
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      // Don't remove token on network errors
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userData');
-        dispatch(setUser(null));
-      }
+    // Verify token
+    const verifyResponse = await axiosInstance.get('/verify');
+    console.log('Verify response:', verifyResponse.data);
+
+    if (verifyResponse.data.message === 'Not verified') {
+      throw new Error('Token not verified');
     }
+
+    // If verified, set user data
+    dispatch(setUser({
+      ...verifyResponse.data,
+      token
+    }));
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    localStorage.removeItem('token');
+    delete axiosInstance.defaults.headers.common['Authorization'];
+    dispatch(setUser(null));
   }
 };
 

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
@@ -17,29 +17,27 @@ import 'react-toastify/dist/ReactToastify.css'
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow">
-          <Switch>
-            <Route exact path="/" component={HomePage} />
-            <Route exact path="/shop" component={ShopPage} />
-            <Route path="/shop/page/:page" component={ShopPage} />
-            <Route path="/features" component={Features} />
-            <Route path="/contact" component={Contact} />
-            <Route path="/blog" component={BlogPage} />
-            <Route path="/about" component={AboutPage} />
-            <Route path="/pages" component={PagesPage} />
-            <Route path="/product/:id" component={ProductDetail} />
-            <Route path="/signup" component={SignupPage} />
-            <Route path="/login" component={LoginPage} />
-            <Route path="/cart" component={CartPage} />
-          </Switch>
-        </main>
-        <Footer />
-        <ToastContainer position="top-right" />
-      </div>
-    </Router>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow">
+        <Switch>
+          <Route exact path="/" component={HomePage} />
+          <Route exact path="/shop" component={ShopPage} />
+          <Route path="/shop/page/:page" component={ShopPage} />
+          <Route path="/features" component={Features} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/blog" component={BlogPage} />
+          <Route path="/about" component={AboutPage} />
+          <Route path="/pages" component={PagesPage} />
+          <Route path="/product/:id" component={ProductDetail} />
+          <Route path="/signup" component={SignupPage} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/cart" component={CartPage} />
+        </Switch>
+      </main>
+      <Footer />
+      <ToastContainer position="top-right" />
+    </div>
   )
 }
 

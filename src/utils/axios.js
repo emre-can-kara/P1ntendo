@@ -9,47 +9,44 @@ const axiosInstance = axios.create({
   }
 })
 
+// Check for token on instance creation
+const token = localStorage.getItem('token')
+if (token) {
+  axiosInstance.defaults.headers.common['Authorization'] = token
+}
+
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Token varsa header'a ekle
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = token;
+      console.log('Request with token:', token);
     }
-    return config
+    return config;
   },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+  (error) => Promise.reject(error)
+);
 
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    return response
+    console.log('Response:', response);
+    if (response.data.token) {
+      const token = response.data.token;
+      localStorage.setItem('token', token);
+      axiosInstance.defaults.headers.common['Authorization'] = token;
+    }
+    return response;
   },
   (error) => {
-    // Global error handling
-    if (error.response) {
-      // Server tarafından hata döndü
-      console.error('Response Error:', error.response.data)
-      
-      // 401 Unauthorized hatası durumunda
-      if (error.response.status === 401) {
-        localStorage.removeItem('token')
-        // Kullanıcıyı login sayfasına yönlendir
-        window.location.href = '/login'
-      }
-    } else if (error.request) {
-      // İstek yapıldı ama cevap alınamadı
-      console.error('Request Error:', error.request)
-    } else {
-      // İstek yapılırken hata oluştu
-      console.error('Error:', error.message)
+    console.error('Response Error:', error.response);
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      delete axiosInstance.defaults.headers.common['Authorization'];
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 export default axiosInstance 
