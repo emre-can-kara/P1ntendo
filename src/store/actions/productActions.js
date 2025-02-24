@@ -69,51 +69,18 @@ export const fetchCategories = () => async (dispatch, getState) => {
   }
 };
 
-export const fetchCategoryProducts = (categoryId) => async (dispatch) => {
+export const fetchProducts = (queryString = '') => async (dispatch) => {
   try {
     dispatch(setFetchState(FETCH_STATES.FETCHING));
     
-    // Get category code from the state
-    const response = await axiosInstance.get(`/products?category=${categoryId}`);
-    console.log('Category products response:', response.data);
-
-    if (response.data) {
-      const { total, products } = response.data;
-      dispatch(setProductList(products));
-      dispatch(setTotal(total));
-    }
-
-    dispatch(setFetchState(FETCH_STATES.FETCHED));
-  } catch (error) {
-    console.error('Error fetching category products:', error);
-    dispatch({
-      type: 'SET_CATEGORY_FETCH_ERROR',
-      payload: error.response?.data?.message || error.message
-    });
-    dispatch(setFetchState(FETCH_STATES.FAILED));
-  }
-};
-
-export const fetchProducts = () => async (dispatch) => {
-  try {
-    dispatch(setFetchState(FETCH_STATES.FETCHING));
+    // Build URL with query string
+    const url = queryString ? `/products?${queryString}` : '/products';
+    console.log('Fetching URL:', url);
     
-    const response = await axiosInstance.get('/products');
-    console.log('Products response:', response.data);
-
+    const response = await axiosInstance.get(url);
+    
     if (response.data) {
       const { total, products } = response.data;
-      
-      // Log the first product to see its structure
-      if (products.length > 0) {
-        console.log('Sample product structure:', {
-          id: products[0].id,
-          name: products[0].name,
-          images: products[0].images,
-          price: products[0].price
-        });
-      }
-
       dispatch(setProductList(products));
       dispatch(setTotal(total));
     }

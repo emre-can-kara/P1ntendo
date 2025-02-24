@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { ChevronRight, Grid, List } from 'lucide-react'
 import BrandLogos from '../components/BrandLogos'
 import { useDispatch, useSelector } from 'react-redux'
 import { addToCart } from '../store/actions/shoppingCartActions'
-import { fetchCategories, fetchCategoryProducts, fetchProducts } from '../store/actions/productActions'
+import { fetchCategories, fetchProducts } from '../store/actions/productActions'
 import { FETCH_STATES } from '../store/reducers/productReducer'
 
 // Update fallback image
@@ -12,7 +12,9 @@ const fallbackImage = 'https://placehold.co/400x400';
 
 function ShopPage({ match }) {
   const [viewType, setViewType] = useState('grid')
-  const [sortBy, setSortBy] = useState('popularity')
+  const [sort, setSort] = useState('')
+  const [filter, setFilter] = useState('')
+  const [debouncedFilter, setDebouncedFilter] = useState('')
   const history = useHistory()
   const [currentPage, setCurrentPage] = useState(1)
   const dispatch = useDispatch()
@@ -28,15 +30,65 @@ function ShopPage({ match }) {
   
   const { categoryId } = match.params;
 
+  // Simple filter change handler
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value); // Just store the value as-is
+  };
+
+  // Debounce filter changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (filter.length >= 3 || filter === '') {
+        setDebouncedFilter(filter.trim()); // Just trim whitespace
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filter]);
+
+  // Fetch products with current filters
+  const fetchFilteredProducts = useCallback(() => {
+    const params = new URLSearchParams();
+    
+    if (categoryId) params.append('category', categoryId);
+    if (debouncedFilter) {
+      params.append('filter', debouncedFilter); // Send original text
+    }
+    if (sort) params.append('sort', sort);
+
+    console.log('Fetching products with params:', params.toString());
+    dispatch(fetchProducts(params.toString()));
+  }, [categoryId, debouncedFilter, sort, dispatch]);
+
+  // Handle sort change
+  const handleSortChange = (e) => {
+    setSort(e.target.value);
+  };
+
+  // Watch for debounced filter and sort changes
+  useEffect(() => {
+    if (debouncedFilter || sort) {
+      fetchFilteredProducts();
+    }
+  }, [debouncedFilter, sort, fetchFilteredProducts]);
+
+  // Initial load and category change
   useEffect(() => {
     dispatch(fetchCategories());
     
-    if (!categoryId) {
-      dispatch(fetchProducts());
+    // When category changes, keep filter and sort
+    if (categoryId) {
+      fetchFilteredProducts();
     } else {
-      dispatch(fetchCategoryProducts(categoryId));
+      // If no category, but we have filter or sort
+      if (filter || sort) {
+        fetchFilteredProducts();
+      } else {
+        // No parameters at all
+        dispatch(fetchProducts());
+      }
     }
-  }, [dispatch, categoryId]);
+  }, [categoryId]);
 
   // Get top 5 categories by rating
   const topCategories = [...categories]
@@ -277,19 +329,27 @@ function ShopPage({ match }) {
               </button>
             </div>
 
+            {/* Filter input with updated placeholder */}
+            <input
+              type="text"
+              value={filter}
+              onChange={handleFilterChange}
+              placeholder="Search products (case and Turkish character insensitive)..."
+              className="border rounded-md px-4 py-2 text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[300px]"
+            />
+
+            {/* Sort select - immediate sorting */}
             <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              value={sort}
+              onChange={handleSortChange}
               className="border rounded-md px-4 py-2 text-gray-500 focus:outline-none"
             >
-              <option value="popularity">Popularity</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
+              <option value="">Sort by</option>
+              <option value="price:asc">Price: Low to High</option>
+              <option value="price:desc">Price: High to Low</option>
+              <option value="rating:asc">Rating: Low to High</option>
+              <option value="rating:desc">Rating: High to Low</option>
             </select>
-
-            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
-              Filter
-            </button>
           </div>
         </div>
 
@@ -333,7 +393,7 @@ function ShopPage({ match }) {
         {/* Show message if no products */}
         {!productList.length && (
           <div className="text-center py-12 text-gray-500">
-            No products found
+            No products found in this category
           </div>
         )}
 
