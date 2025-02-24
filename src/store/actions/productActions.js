@@ -47,25 +47,16 @@ export const setFetchState = (fetchState) => ({
 });
 
 export const fetchCategories = () => async (dispatch, getState) => {
-  const { categories } = getState().product;
-  
-  if (categories.length > 0) return;
-
   try {
     dispatch(setFetchState(FETCH_STATES.FETCHING));
     
     const response = await axiosInstance.get('/categories');
-    console.log('Categories response:', response.data);
+    console.log('Categories API Response:', response.data);
 
     dispatch(setCategories(response.data));
     dispatch(setFetchState(FETCH_STATES.FETCHED));
   } catch (error) {
     console.error('Error fetching categories:', error);
-    dispatch({
-      type: 'SET_CATEGORY_FETCH_ERROR',
-      payload: error.response?.data?.message || error.message
-    });
-    dispatch(setFetchState(FETCH_STATES.FAILED));
   }
 };
 
