@@ -73,11 +73,16 @@ export const fetchProducts = (queryString = '') => async (dispatch) => {
   try {
     dispatch(setFetchState(FETCH_STATES.FETCHING));
     
-    // Build URL with query string
-    const url = queryString ? `/products?${queryString}` : '/products';
+    const url = queryString ? `/products?${queryString}` : '/products?limit=25';
     console.log('Fetching URL:', url);
     
     const response = await axiosInstance.get(url);
+    console.log('API Response:', {
+      url,
+      data: response.data,
+      total: response.data.total,
+      productsCount: response.data.products?.length
+    });
     
     if (response.data) {
       const { total, products } = response.data;
@@ -87,10 +92,10 @@ export const fetchProducts = (queryString = '') => async (dispatch) => {
 
     dispatch(setFetchState(FETCH_STATES.FETCHED));
   } catch (error) {
-    console.error('Error fetching products:', error);
-    dispatch({
-      type: 'SET_FETCH_ERROR',
-      payload: error.response?.data?.message || error.message
+    console.error('Error fetching products:', {
+      error,
+      url: error.config?.url,
+      message: error.message
     });
     dispatch(setFetchState(FETCH_STATES.FAILED));
   }

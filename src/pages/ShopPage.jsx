@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addToCart } from '../store/actions/shoppingCartActions'
 import { fetchCategories, fetchProducts } from '../store/actions/productActions'
 import { FETCH_STATES } from '../store/reducers/productReducer'
+import ReactPaginate from 'react-paginate'
 
 // Update fallback image
 const fallbackImage = 'https://placehold.co/400x400';
@@ -16,9 +17,9 @@ function ShopPage({ match }) {
   const [filter, setFilter] = useState('')
   const [debouncedFilter, setDebouncedFilter] = useState('')
   const history = useHistory()
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [itemsPerPage] = useState(25)
   const dispatch = useDispatch()
-  const productsPerPage = 8
   
   const { 
     categories = [], 
@@ -29,6 +30,9 @@ function ShopPage({ match }) {
   } = useSelector(state => state.product);
   
   const { categoryId } = match.params;
+
+  // Calculate total pages only if we have products
+  const pageCount = productList.length > 0 ? Math.ceil(total / itemsPerPage) : 0;
 
   // Simple filter change handler
   const handleFilterChange = (e) => {
@@ -46,19 +50,21 @@ function ShopPage({ match }) {
     return () => clearTimeout(timer);
   }, [filter]);
 
-  // Fetch products with current filters
+  // Fetch products with pagination
   const fetchFilteredProducts = useCallback(() => {
     const params = new URLSearchParams();
     
     if (categoryId) params.append('category', categoryId);
-    if (debouncedFilter) {
-      params.append('filter', debouncedFilter); // Send original text
-    }
+    if (debouncedFilter) params.append('filter', debouncedFilter);
     if (sort) params.append('sort', sort);
+    
+    // Add pagination parameters
+    params.append('limit', itemsPerPage);
+    params.append('offset', currentPage * itemsPerPage);
 
     console.log('Fetching products with params:', params.toString());
     dispatch(fetchProducts(params.toString()));
-  }, [categoryId, debouncedFilter, sort, dispatch]);
+  }, [categoryId, debouncedFilter, sort, currentPage, itemsPerPage, dispatch]);
 
   // Handle sort change
   const handleSortChange = (e) => {
@@ -76,19 +82,52 @@ function ShopPage({ match }) {
   useEffect(() => {
     dispatch(fetchCategories());
     
+    // Reset to first page when category changes
+    setCurrentPage(0);
+    
     // When category changes, keep filter and sort
     if (categoryId) {
-      fetchFilteredProducts();
+      const params = new URLSearchParams();
+      params.append('category', categoryId);
+      if (debouncedFilter) params.append('filter', debouncedFilter);
+      if (sort) params.append('sort', sort);
+      params.append('limit', itemsPerPage);
+      params.append('offset', 0); // Start from first page
+      
+      dispatch(fetchProducts(params.toString()));
     } else {
       // If no category, but we have filter or sort
       if (filter || sort) {
-        fetchFilteredProducts();
+        const params = new URLSearchParams();
+        if (debouncedFilter) params.append('filter', debouncedFilter);
+        if (sort) params.append('sort', sort);
+        params.append('limit', itemsPerPage);
+        params.append('offset', 0);
+        
+        dispatch(fetchProducts(params.toString()));
       } else {
-        // No parameters at all
-        dispatch(fetchProducts());
+        // No parameters at all, just fetch first page
+        dispatch(fetchProducts('limit=25&offset=0'));
       }
     }
   }, [categoryId]);
+
+  // Watch for filter and sort changes
+  useEffect(() => {
+    if (debouncedFilter || sort) {
+      // Reset to first page when filter/sort changes
+      setCurrentPage(0);
+      
+      const params = new URLSearchParams();
+      if (categoryId) params.append('category', categoryId);
+      if (debouncedFilter) params.append('filter', debouncedFilter);
+      if (sort) params.append('sort', sort);
+      params.append('limit', itemsPerPage);
+      params.append('offset', 0); // Start from first page
+      
+      dispatch(fetchProducts(params.toString()));
+    }
+  }, [debouncedFilter, sort]);
 
   // Get top 5 categories by rating
   const topCategories = [...categories]
@@ -97,20 +136,34 @@ function ShopPage({ match }) {
 
   // Pagination with safety checks
   const safeProductList = productList || [];
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const indexOfLastProduct = currentPage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
   const currentProducts = safeProductList.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(safeProductList.length / productsPerPage);
 
   const handleProductClick = (product) => {
     window.scrollTo(0, 0);
     history.push(`/product/${product.id}`, { productData: product });
   }
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-    window.scrollTo(0, 0)
-  }
+  // Handle page change
+  const handlePageChange = (selectedItem) => {
+    const newPage = selectedItem.selected;
+    setCurrentPage(newPage);
+    
+    // Create params for the new page
+    const params = new URLSearchParams();
+    if (categoryId) params.append('category', categoryId);
+    if (debouncedFilter) params.append('filter', debouncedFilter);
+    if (sort) params.append('sort', sort);
+    
+    // Add pagination parameters
+    params.append('limit', itemsPerPage);
+    params.append('offset', newPage * itemsPerPage);
+
+    // Fetch the new page of products
+    dispatch(fetchProducts(params.toString()));
+    window.scrollTo(0, 0);
+  };
 
   const handleAddToCart = (product) => {
     dispatch(addToCart(product, 1))
@@ -397,48 +450,25 @@ function ShopPage({ match }) {
           </div>
         )}
 
-        {/* Pagination */}
-        {safeProductList.length > 0 && (
+        {/* Pagination - Only show if we have products and more than one page */}
+        {productList.length > 0 && pageCount > 1 && (
           <div className="flex justify-center mt-12">
-            <div className="flex items-center space-x-2">
-              <button 
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPage === 1 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                First
-              </button>
-              
-              {[...Array(totalPages)].map((_, i) => (
-                <button 
-                  key={i + 1}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-4 py-2 rounded-lg ${
-                    currentPage === i + 1 
-                      ? 'bg-blue-500 text-white' 
-                      : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-
-              <button 
-                onClick={() => handlePageChange(totalPages)}
-                disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPage === totalPages 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Last
-              </button>
-            </div>
+            <ReactPaginate
+              previousLabel="Previous"
+              nextLabel="Next"
+              pageCount={pageCount}
+              onPageChange={handlePageChange}
+              containerClassName="flex items-center space-x-2"
+              pageClassName="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+              activeClassName="!bg-blue-500 !text-white !border-blue-500"
+              previousClassName="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+              nextClassName="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+              disabledClassName="opacity-50 cursor-not-allowed"
+              breakLabel="..."
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={5}
+              forcePage={currentPage}
+            />
           </div>
         )}
       </div>
