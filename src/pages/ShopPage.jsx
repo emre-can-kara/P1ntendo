@@ -51,8 +51,11 @@ function ShopPage({ match }) {
 
   // Add these useEffects for product fetching
   useEffect(() => {
-    // Initial products fetch
-    dispatch(fetchProducts('limit=25&offset=0'));
+    // Initial products fetch with first page
+    const params = new URLSearchParams();
+    params.append('limit', itemsPerPage);
+    params.append('offset', 0);
+    dispatch(fetchProducts(params.toString()));
   }, []); // Empty dependency array for initial load
 
   // Add this effect to handle category changes
@@ -91,15 +94,24 @@ function ShopPage({ match }) {
   // Handle page changes
   const handlePageChange = (selectedItem) => {
     const newPage = selectedItem.selected;
+    const newOffset = newPage * itemsPerPage;
     setCurrentPage(newPage);
     
+    // Create params for the new page
     const params = new URLSearchParams();
     if (categoryId) params.append('category', categoryId);
     if (debouncedFilter) params.append('filter', debouncedFilter);
     if (sort) params.append('sort', sort);
+    
+    // Add pagination parameters
     params.append('limit', itemsPerPage);
-    params.append('offset', newPage * itemsPerPage);
+    params.append('offset', newOffset); // Use calculated offset
 
+    // Update URL to reflect pagination
+    const newUrl = `${location.pathname}?${params.toString()}`;
+    history.push(newUrl);
+
+    // Fetch products with new offset
     dispatch(fetchProducts(params.toString()));
     window.scrollTo(0, 0);
   };
