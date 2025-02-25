@@ -129,8 +129,35 @@ function ShopPage({ match }) {
   };
 
   const handleProductClick = (product) => {
+    // Get category details from categoryId
+    const category = categories.find(c => c.id === parseInt(product.category_id));
+    
+    if (!category) {
+      console.error('Category not found for product:', product);
+      return;
+    }
+
+    // Create product name slug
+    const productNameSlug = product.name
+      .toLowerCase()
+      .trim()
+      .replace(/[ğ]/g, 'g')
+      .replace(/[ü]/g, 'u')
+      .replace(/[ş]/g, 's')
+      .replace(/[ı]/g, 'i')
+      .replace(/[ö]/g, 'o')
+      .replace(/[ç]/g, 'c')
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    // Create the URL
+    const gender = category.gender === 'k' ? 'kadin' : 'erkek';
+    const url = `/shop/${gender}/${category.code}/${category.id}/${productNameSlug}/${product.id}`;
+
+    // Navigate to product detail page
     window.scrollTo(0, 0);
-    history.push(`/product/${product.id}`, { productData: product });
+    history.push(url, { productData: product });
   };
 
   // Get top 5 categories

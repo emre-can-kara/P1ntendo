@@ -12,6 +12,7 @@ export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
 export const UPDATE_CART_ITEM = 'UPDATE_CART_ITEM';
 export const SET_PAYMENT = 'SET_PAYMENT';
 export const SET_ADDRESS = 'SET_ADDRESS';
+export const TOGGLE_CART_ITEM = 'TOGGLE_CART_ITEM';
 
 // Helper function to update localStorage
 const updateLocalStorage = (cart) => {
@@ -32,16 +33,18 @@ const shoppingCartReducer = (state = initialState, action) => {
 
     case ADD_TO_CART: {
       const { product, count = 1 } = action.payload;
-      const existingItem = state.cart.find(item => item.product.id === product.id);
+      const existingItemIndex = state.cart.findIndex(item => item.product.id === product.id);
 
-      if (existingItem) {
-        newCart = state.cart.map(item =>
-          item.product.id === product.id
+      if (existingItemIndex >= 0) {
+        // Update count if product exists
+        newCart = state.cart.map((item, index) => 
+          index === existingItemIndex 
             ? { ...item, count: item.count + count }
             : item
         );
       } else {
-        newCart = [...state.cart, { product, count }];
+        // Add new item if product doesn't exist
+        newCart = [...state.cart, { product, count, checked: true }];
       }
       
       updateLocalStorage(newCart);
@@ -81,6 +84,18 @@ const shoppingCartReducer = (state = initialState, action) => {
       return {
         ...state,
         address: action.payload
+      };
+
+    case TOGGLE_CART_ITEM:
+      newCart = state.cart.map(item =>
+        item.product.id === action.payload
+          ? { ...item, checked: !item.checked }
+          : item
+      );
+      updateLocalStorage(newCart);
+      return {
+        ...state,
+        cart: newCart
       };
 
     default:

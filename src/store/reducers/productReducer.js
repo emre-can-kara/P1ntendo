@@ -9,7 +9,10 @@ const initialState = {
   fetchState: 'NOT_FETCHED',
   selectedCategory: null,
   categoryFetchError: null,
-  error: null
+  error: null,
+  singleProduct: null,
+  singleProductLoading: false,
+  singleProductError: null
 };
 
 // Action Types
@@ -23,6 +26,9 @@ export const SET_FETCH_STATE = 'SET_FETCH_STATE';
 export const SET_SELECTED_CATEGORY = 'SET_SELECTED_CATEGORY';
 export const SET_CATEGORY_FETCH_ERROR = 'SET_CATEGORY_FETCH_ERROR';
 export const SET_FETCH_ERROR = 'SET_FETCH_ERROR';
+export const SET_SINGLE_PRODUCT = 'SET_SINGLE_PRODUCT';
+export const SET_SINGLE_PRODUCT_LOADING = 'SET_SINGLE_PRODUCT_LOADING';
+export const SET_SINGLE_PRODUCT_ERROR = 'SET_SINGLE_PRODUCT_ERROR';
 
 // Fetch States
 export const FETCH_STATES = {
@@ -87,6 +93,25 @@ const productReducer = (state = initialState, action) => {
         ...state,
         fetchState: action.payload,
         error: action.payload === FETCH_STATES.FETCHING ? null : state.error
+      };
+    case SET_SINGLE_PRODUCT:
+      return {
+        ...state,
+        singleProduct: action.payload,
+        singleProductLoading: false,
+        singleProductError: null
+      };
+    case SET_SINGLE_PRODUCT_LOADING:
+      return {
+        ...state,
+        singleProductLoading: true,
+        singleProductError: null
+      };
+    case SET_SINGLE_PRODUCT_ERROR:
+      return {
+        ...state,
+        singleProductError: action.payload,
+        singleProductLoading: false
       };
     default:
       return state;

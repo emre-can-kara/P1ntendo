@@ -17,6 +17,7 @@ import Gravatar from 'react-gravatar'
 import { handleSignOut } from '../store/actions/clientActions'
 import { fetchCategories } from '../store/actions/productActions'
 import { FETCH_STATES } from '../store/reducers/productReducer'
+import CartDropdown from './CartDropdown'
 
 function Navbar({ location }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -28,6 +29,8 @@ function Navbar({ location }) {
   const cart = useSelector(state => state.shoppingCart.cart)
   const cartItemCount = cart.reduce((total, item) => total + item.count, 0)
   const { categories = [], fetchState } = useSelector(state => state.product)
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const cartDropdownRef = useRef(null)
 
   // Debug log
   console.log('Current user:', user);
@@ -46,6 +49,16 @@ function Navbar({ location }) {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (cartDropdownRef.current && !cartDropdownRef.current.contains(event.target)) {
+        setIsCartOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -279,12 +292,24 @@ function Navbar({ location }) {
             <button className="text-[#3B82F6] hover:text-blue-600">
               <Search className="h-5 w-5" />
             </button>
-            <Link to="/cart" className="text-[#3B82F6] hover:text-blue-600 relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">
-                {cartItemCount}
-              </span>
-            </Link>
+            <div className="relative" ref={cartDropdownRef}>
+              <button 
+                onClick={() => setIsCartOpen(!isCartOpen)}
+                className="text-[#3B82F6] hover:text-blue-600 relative"
+              >
+                <ShoppingBag className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">
+                    {cartItemCount}
+                  </span>
+                )}
+              </button>
+              
+              <CartDropdown 
+                isOpen={isCartOpen} 
+                onClose={() => setIsCartOpen(false)} 
+              />
+            </div>
             <button className="text-[#3B82F6] hover:text-blue-600 relative">
               <Heart className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full text-xs px-2">1</span>

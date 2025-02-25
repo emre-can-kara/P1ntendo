@@ -1,3 +1,4 @@
+import axiosInstance from "../../utils/axios";
 import {
   SET_CART,
   ADD_TO_CART,
@@ -59,5 +60,20 @@ export const loadCart = () => (dispatch) => {
   const savedCart = localStorage.getItem('cart');
   if (savedCart) {
     dispatch(setCart(JSON.parse(savedCart)));
+  }
+};
+
+// Add fetchProductById action
+export const fetchProductById = (productId) => async (dispatch) => {
+  try {
+    const response = await axiosInstance.get(`/products/${productId}`);
+    
+    if (response.data) {
+      // Add the fetched product directly to cart state or handle it in your reducer
+      return response.data;
+    }
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    throw error;
   }
 }; 

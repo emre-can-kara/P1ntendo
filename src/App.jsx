@@ -23,13 +23,19 @@ function App() {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route exact path="/shop" component={ShopPage} />
-          <Route path="/shop/:gender/:category/:categoryId" component={ShopPage} />
+          <Route 
+            path="/shop/:gender/:categoryName/:categoryId/:productSlug/:productId" 
+            component={ProductDetail} 
+          />
+          <Route 
+            path="/shop/:gender/:category/:categoryId" 
+            component={ShopPage} 
+          />
           <Route path="/features" component={Features} />
           <Route path="/contact" component={Contact} />
           <Route path="/blog" component={BlogPage} />
           <Route path="/about" component={AboutPage} />
           <Route path="/pages" component={PagesPage} />
-          <Route path="/product/:id" component={ProductDetail} />
           <Route path="/signup" component={SignupPage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/cart" component={CartPage} />

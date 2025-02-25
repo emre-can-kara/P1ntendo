@@ -7,7 +7,10 @@ import {
   SET_OFFSET,
   SET_FILTER,
   SET_FETCH_STATE,
-  FETCH_STATES
+  FETCH_STATES,
+  SET_SINGLE_PRODUCT,
+  SET_SINGLE_PRODUCT_LOADING,
+  SET_SINGLE_PRODUCT_ERROR
 } from '../reducers/productReducer';
 
 // Basic action creators
@@ -89,5 +92,24 @@ export const fetchProducts = (queryString = '') => async (dispatch) => {
       message: error.message
     });
     dispatch(setFetchState(FETCH_STATES.FAILED));
+  }
+};
+
+export const fetchSingleProduct = (productId) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_SINGLE_PRODUCT_LOADING });
+    
+    const response = await axiosInstance.get(`/products/${productId}`);
+    
+    dispatch({
+      type: SET_SINGLE_PRODUCT,
+      payload: response.data
+    });
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    dispatch({
+      type: SET_SINGLE_PRODUCT_ERROR,
+      payload: error.message
+    });
   }
 }; 
