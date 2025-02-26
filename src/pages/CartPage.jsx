@@ -1,11 +1,14 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { removeFromCart, updateCartItem } from '../store/actions/shoppingCartActions';
 import { Trash2, Plus, Minus } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 function CartPage() {
   const cart = useSelector(state => state.shoppingCart.cart);
+  const user = useSelector(state => state.client.user);
   const dispatch = useDispatch();
+  const history = useHistory();
 
   console.log('Cart in CartPage:', cart); // Debug log
 
@@ -51,6 +54,17 @@ function CartPage() {
   const shipping = calculateShipping(subtotal);
   const discount = calculateDiscount(subtotal);
   const grandTotal = subtotal + shipping - discount;
+
+  const handleCheckout = () => {
+    if (!user) {
+      // If user is not logged in, redirect to login
+      history.push('/login');
+      toast.info('Please login to proceed with checkout');
+    } else {
+      // If user is logged in, proceed to order page
+      history.push('/order');
+    }
+  };
 
   if (cart.length === 0) {
     return (
@@ -197,7 +211,10 @@ function CartPage() {
           </div>
 
           {/* Checkout Button */}
-          <button className="w-full bg-blue-600 text-white py-3 rounded-lg mt-6 hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={handleCheckout}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg mt-6 hover:bg-blue-700 transition-colors"
+          >
             Proceed to Checkout (${grandTotal.toFixed(2)})
           </button>
 
