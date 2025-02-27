@@ -3,6 +3,7 @@ import {
   SET_ADDRESSES,
   SET_ADDRESSES_LOADING,
   SET_ADDRESSES_ERROR,
+  SET_SELECTED_ADDRESS,
   SET_CARDS,
   SET_CARDS_LOADING,
   SET_CARDS_ERROR,
@@ -107,4 +108,9 @@ export const setActiveStep = (step) => ({
 export const setSelectedCard = (card) => ({
   type: SET_SELECTED_CARD,
   payload: card
+});
+
+export const setSelectedAddress = (address) => ({
+  type: SET_SELECTED_ADDRESS,
+  payload: address
 }); 

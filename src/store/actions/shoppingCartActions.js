@@ -40,6 +40,12 @@ export const updateCartItem = (productId, count) => ({
   payload: { productId, count }
 });
 
+// Sepeti temizle
+export const clearCart = () => ({
+  type: SET_CART,
+  payload: []
+});
+
 // Thunk action creator for fetching roles - only when needed
 export const fetchRoles = () => async (dispatch, getState) => {
   // Check if roles are already in store

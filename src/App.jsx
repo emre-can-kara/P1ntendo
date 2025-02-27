@@ -13,6 +13,7 @@ import SignupPage from './pages/SignupPage'
 import LoginPage from './pages/LoginPage'
 import CartPage from './pages/CartPage'
 import OrderPage from './pages/OrderPage'
+import OrderConfirmationPage from './pages/OrderConfirmationPage'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -40,6 +41,7 @@ function App() {
           <Route path="/signup" component={SignupPage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/cart" component={CartPage} />
+          <Route path="/order/confirmation" component={OrderConfirmationPage} />
           <Route path="/order" component={OrderPage} />
         </Switch>
       </main>

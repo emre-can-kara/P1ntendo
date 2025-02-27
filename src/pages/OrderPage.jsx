@@ -6,6 +6,7 @@ import {
   fetchCards,
   setActiveStep,
   setSelectedCard,
+  setSelectedAddress,
   deleteAddress,
   deleteCard
 } from '../store/actions/orderActions';
@@ -15,7 +16,7 @@ import { Trash2, CreditCard } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 function OrderPage() {
-  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [localSelectedAddress, setLocalSelectedAddress] = useState(null);
   const [isNewAddress, setIsNewAddress] = useState(false);
   const [isNewCard, setIsNewCard] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -35,6 +36,13 @@ function OrderPage() {
     activeStep 
   } = useSelector(state => state.order);
   const user = useSelector(state => state.client.user);
+
+  // Yerel state ile store'daki seçili adresi senkronize et
+  useEffect(() => {
+    if (storeSelectedAddress) {
+      setLocalSelectedAddress(storeSelectedAddress);
+    }
+  }, [storeSelectedAddress]);
 
   useEffect(() => {
     if (!user) {
@@ -63,15 +71,16 @@ function OrderPage() {
   const confirmDelete = async () => {
     if (deletingAddress) {
       await dispatch(deleteAddress(deletingAddress.id));
-      if (selectedAddress?.id === deletingAddress.id) {
-        setSelectedAddress(null);
+      if (localSelectedAddress?.id === deletingAddress.id) {
+        setLocalSelectedAddress(null);
+        dispatch(setSelectedAddress(null));
       }
       setDeletingAddress(null);
     }
   };
 
   const handleStepClick = (step) => {
-    if (step === 'payment' && !selectedAddress) {
+    if (step === 'payment' && !localSelectedAddress) {
       toast.error('Please select an address first');
       return;
     }
@@ -96,6 +105,12 @@ function OrderPage() {
       }
       setDeletingCard(null);
     }
+  };
+
+  // Adres seçildiğinde hem yerel state'i hem de Redux store'u güncelle
+  const handleAddressSelect = (address) => {
+    setLocalSelectedAddress(address);
+    dispatch(setSelectedAddress(address));
   };
 
   return (
@@ -150,19 +165,19 @@ function OrderPage() {
                 <div
                   key={address.id}
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedAddress?.id === address.id
+                    localSelectedAddress?.id === address.id
                       ? 'border-blue-500 shadow-md'
                       : 'border-gray-200 hover:border-blue-300'
                   }`}
-                  onClick={() => setSelectedAddress(address)}
+                  onClick={() => handleAddressSelect(address)}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium">{address.title}</h3>
                     <div className="flex items-center space-x-2">
                       <input
                         type="radio"
-                        checked={selectedAddress?.id === address.id}
-                        onChange={() => setSelectedAddress(address)}
+                        checked={localSelectedAddress?.id === address.id}
+                        onChange={() => handleAddressSelect(address)}
                         className="h-4 w-4 text-blue-600"
                       />
                       <button
@@ -349,7 +364,8 @@ function OrderPage() {
         <button
           onClick={() => {
             if (activeStep === 'address') {
-              if (selectedAddress) {
+              if (localSelectedAddress) {
+                dispatch(setSelectedAddress(localSelectedAddress));
                 dispatch(setActiveStep('payment'));
               } else {
                 toast.error('Please select an address');
